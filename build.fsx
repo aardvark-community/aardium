@@ -18,6 +18,24 @@ let npmName =
     if Environment.OSVersion.Platform = PlatformID.Unix || Environment.OSVersion.Platform = PlatformID.MacOSX then "npm"
     else "npm.cmd"
 
+let yarn (args : list<string>) =
+    let yarn =
+        match Fake.ProcessHelper.tryFindFileOnPath yarnName with
+            | Some path -> path
+            | None -> failwith "could not locate yarn"
+
+    let ret = 
+        Fake.ProcessHelper.ExecProcess (fun info ->
+            info.FileName <- yarn
+            info.WorkingDirectory <- "Aardium"
+            info.Arguments <- String.concat " " args
+            ()
+        ) TimeSpan.MaxValue
+
+    if ret <> 0 then
+        failwith "yarn failed"
+
+
 Target "InstallYarn" (fun () ->
 
     match Fake.ProcessHelper.tryFindFileOnPath yarnName with
@@ -42,25 +60,13 @@ Target "InstallYarn" (fun () ->
 )
 
 Target "Yarn" (fun () ->
-
-    let yarn =
-        match Fake.ProcessHelper.tryFindFileOnPath yarnName with
-            | Some path -> path
-            | None -> failwith "could not locate yarn"
-
-    let ret = 
-        Fake.ProcessHelper.ExecProcess (fun info ->
-            info.FileName <- yarn
-            info.WorkingDirectory <- "Aardium"
-            info.Arguments <- "dist"
-            ()
-        ) TimeSpan.MaxValue
-
-    if ret <> 0 then
-        failwith "yarn failed"
-    ()
+    yarn []
 )
 
-"InstallYarn" ==> "Yarn" ==> "CreatePackage"
+Target "YarnPack" (fun () ->
+    yarn ["dist"]
+)
+
+"InstallYarn" ==> "Yarn" ==> "YarnPack" ==> "CreatePackage"
 
 entry()
