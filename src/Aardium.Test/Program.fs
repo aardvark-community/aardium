@@ -1,8 +1,13 @@
 ﻿// Learn more about F# at http://fsharp.org
 
 open System
+open Aardvark.Base
+open Aardium
+
 
 [<EntryPoint>]
 let main argv =
-    printfn "Hello World from F#!"
+    Aardium.init()
+    Aardium.runUrl "http://ask.aardvark.graphics"
+
     0 // return an integer exit code
