@@ -11,7 +11,9 @@
   
   "scripts": {
     "start": "electron .",
-    "dist": "electron-packager . Aardium --platform=win32 --arch=x64 --icon ./aardvark.ico --out dist"
+    "dist-win64": "electron-packager . Aardium --platform=win32 --arch=x64 --icon ./aardvark.ico --out dist",
+    "dist-linux64": "electron-packager . Aardium --platform=linux --arch=x64 --icon ./aardvark.ico --out dist",
+	"dist": "yarn dist-win64 && yarn dist-linux64"
   },
   
   "main": "main.js",
