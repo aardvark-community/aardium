@@ -17,6 +17,7 @@ function createWindow () {
 	new BrowserWindow({ 
 		width: 800,
 		height: 600,
+		title: "Aardvark rocks \\o/",
 		icon: path.join(__dirname, 'aardvark.ico'),
 		webPreferences: { 
 			nodeIntegration: false, 
@@ -24,9 +25,13 @@ function createWindow () {
 			preload: path.join(__dirname, 'preload.js')
 		}
 	});
+  mainWindow.setMenu(null);
 
+  var url = "http://localhost:4321/";
+  if(process.argv.length > 2) url = process.argv[2];
+	
   // and load the index.html of the app.
-  mainWindow.loadURL("http://localhost:4321/");
+  mainWindow.loadURL(url);
 
   // Open the DevTools.
   // mainWindow.webContents.openDevTools()
