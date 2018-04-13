@@ -8,4 +8,4 @@ version 1.0.0
 description
     Aardvark is an open-source platform for visual computing, real-time graphics and visualization.
 files
-	dist/Aardium-linux-x64 => tools
+	../Aardium/dist/Aardium-linux-x64 => tools
