@@ -6,3 +6,6 @@ Aardium/yarn-error.log
 packages
 paket-files
 .fake
+**/.vs
+**/obj/
+bin
