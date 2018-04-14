@@ -126,11 +126,72 @@ module Tools =
             ()
 
 
+type AardiumConfig =
+    {
+        width       : Option<int>
+        height      : Option<int>
+        url         : Option<string>
+        debug       : bool
+        icon        : Option<string>
+        title       : Option<string>
+        menu        : bool
+        fullscreen  : bool
+    }
+
+module AardiumConfig =
+    let empty = 
+        {
+            width = None
+            height = None
+            url = None
+            debug = true
+            icon = None
+            title = None
+            menu = false
+            fullscreen = false
+        }
+
+    let internal toArgs (cfg : AardiumConfig) =
+        [|
+            match cfg.width with
+                | Some w -> yield! [| "-w"; string w |]
+                | None -> ()
+
+            match cfg.height with
+                | Some h -> yield! [| "-h"; string h |]
+                | None -> ()
+
+            match cfg.url with
+                | Some url -> yield! [| "--url"; "\"" + url + "\"" |]
+                | None -> ()
+
+            match cfg.debug with
+                | true -> yield "--debug"
+                | false -> ()
+            
+            match cfg.title with    
+                | Some t -> yield! [| "--title"; "\"" + t + "\"" |]
+                | None -> ()
+
+            match cfg.menu with
+                | true -> yield "--menu"
+                | false -> ()
+
+            match cfg.fullscreen with
+                | true -> yield "--fullscreen"
+                | false -> ()
+
+        |]
+
+
 module Aardium =
+
+    
+
 
     let feed = "https://vrvis.myget.org/F/aardvark_public/api/v2/package"
     let packageBaseName = "Aardium"
-    let version = "1.0.0"
+    let version = "1.0.1"
 
     let private platform =
         match Environment.OSVersion with
@@ -177,13 +238,56 @@ module Aardium =
             Tools.unzip tempFile aardiumPath
             Log.stop()
 
-    let runUrl (url : string) =
+    let runConfig (cfg : AardiumConfig)  =
         let aardiumPath = Path.Combine(cachePath, arch, version, "tools", exeName)
         if File.Exists aardiumPath then
-            Tools.exec aardiumPath [|"dummy"; "\"" + url + "\"" |]
+            Tools.exec aardiumPath (AardiumConfig.toArgs cfg)
         else
             failwithf "could not locate aardium"
 
-    let run() =
-        runUrl "http://localhost:4321/"
+
+    type AardiumBuilder() =
+        member x.Yield(()) = AardiumConfig.empty
+
+        [<CustomOperation("url")>]
+        member x.Url(cfg : AardiumConfig, url : string) =
+            { cfg with url = Some url }
+            
+        [<CustomOperation("icon")>]
+        member x.Icon(cfg : AardiumConfig, file : string) =
+            { cfg with icon = Some file }
+            
+        [<CustomOperation("title")>]
+        member x.Title(cfg : AardiumConfig, title : string) =
+            { cfg with title = Some title }
+
+        [<CustomOperation("width")>]
+        member x.Width(cfg : AardiumConfig, w : int) =
+            { cfg with width = Some w }
+            
+        [<CustomOperation("height")>]
+        member x.Height(cfg : AardiumConfig, h : int) =
+            { cfg with height = Some h }
+            
+        [<CustomOperation("size")>]
+        member x.Size(cfg : AardiumConfig, s : V2i) =
+            { cfg with width = Some s.X; height = Some s.Y }
+            
+        [<CustomOperation("debug")>]
+        member x.Debug(cfg : AardiumConfig, v : bool) =
+            { cfg with debug = v }
+            
+        [<CustomOperation("fullscreen")>]
+        member x.Fullscreen(cfg : AardiumConfig, v : bool) =
+            { cfg with fullscreen = v }
+            
+        [<CustomOperation("menu")>]
+        member x.Menu(cfg : AardiumConfig, v : bool) =
+            { cfg with menu = v }
+
+        member x.Run(cfg : AardiumConfig) =
+            runConfig cfg
+
+
+    let run = AardiumBuilder()
         

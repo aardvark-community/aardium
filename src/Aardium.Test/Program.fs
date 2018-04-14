@@ -8,6 +8,8 @@ open Aardium
 [<EntryPoint>]
 let main argv =
     Aardium.init()
-    Aardium.runUrl "http://ask.aardvark.graphics"
+    Aardium.run { 
+        url "http://ask.aardvark.graphics"
+    }
 
     0 // return an integer exit code
