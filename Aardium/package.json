@@ -11,8 +11,8 @@
   
   "scripts": {
     "start": "electron .",
-    "dist-win64": "electron-packager . Aardium --platform=win32 --arch=x64 --icon ./aardvark.ico --out dist",
-    "dist-linux64": "electron-packager . Aardium --platform=linux --arch=x64 --icon ./aardvark.ico --out dist",
+    "dist-win64": "electron-packager . Aardium --platform=win32 --arch=x64 --icon ./aardvark.ico --out dist --overwrite",
+    "dist-linux64": "electron-packager . Aardium --platform=linux --arch=x64 --icon ./aardvark.ico --out dist --overwrite",
 	"dist": "yarn dist-win64 && yarn dist-linux64",
 	"zip": "yarn dist && folder-zip-sync dist/Aardium-win32-x64 dist/Aardium-win32-x64.zip && folder-zip-sync dist/Aardium-linux-x64 dist/Aardium-linux-x64.zip"
   },
