@@ -216,6 +216,11 @@ module Aardium =
     let private cachePath =
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Aardium")
 
+    module Libc =
+        open System.Runtime.InteropServices
+        [<DllImport("libc")>]
+        extern int chmod(string path, int mode)
+
     let init() =
         let info = DirectoryInfo cachePath
         if not info.Exists then info.Create()
@@ -237,6 +242,11 @@ module Aardium =
             Log.startTimed "unpacking"
             Tools.unzip tempFile aardiumPath
             Log.stop()
+            match System.Environment.OSVersion with
+                | Linux | Mac -> 
+                    let worked = Libc.chmod(Path.combine [aardiumPath; "tools"; "Aardium"], 0b111101101)
+                    if worked <> 0 then Log.warn "chmod failed. consider to chmod +x Aardium"
+                | _ -> ()
 
     let runConfig (cfg : AardiumConfig)  =
         let aardiumPath = Path.Combine(cachePath, arch, version, "tools", exeName)
