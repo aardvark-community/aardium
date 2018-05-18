@@ -8,7 +8,10 @@ aardvark.openFileDialog = function(config, callback) {
 	dialog.showOpenDialog({properties: ['openFile', 'multiSelections']}, callback);
 };
 
+
 aardvark.setMenu = function(template) {
 	const menu = Menu.buildFromTemplate(template)
 	Menu.setApplicationMenu(menu)
 };
+
+aardvark.dialog = dialog;
