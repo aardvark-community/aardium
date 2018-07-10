@@ -1,4 +1,5 @@
 const {dialog, Menu} = require('electron').remote
+const electron = require('electron')
 
 var aardvark = {};
 document.aardvark = aardvark;
@@ -15,3 +16,4 @@ aardvark.setMenu = function(template) {
 };
 
 aardvark.dialog = dialog;
+aardvark.electron = electron;
