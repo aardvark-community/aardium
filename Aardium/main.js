@@ -3,6 +3,7 @@ const electron = require('electron')
 const app = electron.app
 // Module to create native browser window.
 const BrowserWindow = electron.BrowserWindow
+const electronLocalshortcut = require('electron-localshortcut');
 
 const path = require('path')
 const url = require('url')
@@ -78,24 +79,24 @@ function createWindow () {
     });
   }
 
-  electron.globalShortcut.register('F11',() => {
+  electronLocalshortcut.register(mainWindow,'F11',() => {
     var n = !mainWindow.isFullScreen();
     console.log("fullscreen: " + n);
     mainWindow.setFullScreen(n);
   });
   if(opt.debug) {
     
-    electron.globalShortcut.register('F10',() => {
+    electronLocalshortcut.register(mainWindow,'F10',() => {
       console.log("devtools");
       mainWindow.webContents.toggleDevTools();
     });
 
-    electron.globalShortcut.register('F5',() => {
+    electronLocalshortcut.register(mainWindow,'F5',() => {
       console.log("reload");
       mainWindow.webContents.reload(true);
     });
 
-
+	
 
   }
 
