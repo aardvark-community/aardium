@@ -24,7 +24,7 @@
     "electron-localshortcut": "^3.1.0"
   },
   "devDependencies": {
-    "electron": "^2.0.5",
+    "electron": "^2.0.7",
     "electron-packager": "~12.1.0",
     "electron-rebuild": "^1.8.1",
     "folder-zip-sync": "^1.0.5"
