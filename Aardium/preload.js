@@ -62,3 +62,11 @@ aardvark.openMapping = function (name, len) {
 
 aardvark.dialog = dialog;
 aardvark.electron = electron;
+
+aardvark.captureFullscreen = function(path) 
+{
+	aardvark.electron.remote.getCurrentWindow().capturePage(function (e) 
+	{ 
+		aardvark.electron.remote.require('fs').writeFile(path, e.toPNG()); 
+	});
+};
