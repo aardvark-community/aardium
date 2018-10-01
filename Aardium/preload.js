@@ -67,6 +67,10 @@ aardvark.captureFullscreen = function(path)
 {
 	aardvark.electron.remote.getCurrentWindow().capturePage(function (e) 
 	{ 
-		aardvark.electron.remote.require('fs').writeFile(path, e.toPNG()); 
+		var ext = path.split('.').pop();
+		if(ext === "png")
+			aardvark.electron.remote.require('fs').writeFile(path, e.toJPEG(100)); 
+		else if(ext == "jpg" || ext === "jpeg") 
+			aardvark.electron.remote.require('fs').writeFile(path, e.toPNG()); 
 	});
 };

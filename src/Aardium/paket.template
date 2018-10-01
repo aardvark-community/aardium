@@ -5,5 +5,7 @@ owners Aardvark Platform Team
 projectUrl http://github.com/aardvark-platform
 licenseUrl http://www.apache.org/licenses/LICENSE-2.0.txt
 description
-    Aardium is a lightweight Electron browser used by Aardvark.UI
+    Aardium is a lightweight Electron browser used by aardvark-media. 
+	In combination with Aardium-Win32-x64 and Aardium-Linux-x64 can be used as battery-included
+	dotnet standard library which hosts electron and provides special some special functionality.
 include-pdbs true
