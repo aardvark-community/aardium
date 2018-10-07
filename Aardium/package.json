@@ -20,7 +20,7 @@
   "repository": "https://github.com/electron/electron-quick-start",
   "dependencies": {
     "node-getopt": "^0.3.2",
-    "node-shared-mem": "^1.0.4",
+    "node-shared-mem": "^1.0.5",
     "electron-localshortcut": "^3.1.0"
   },
   "devDependencies": {

@@ -1,27 +1,29 @@
 RESTRICTION: || (== net471) (== netcoreapp2.0) (== netstandard2.0)
 NUGET
   remote: https://api.nuget.org/v3/index.json
-    Aardvark.Base (4.0.18)
-      Aardvark.Base.Telemetry (4.0.18)
+    Aardvark.Base (4.2.3)
+      Aardvark.Base.Telemetry (4.2.3)
       DevILSharp (>= 0.2.4 < 0.3)
       System.Collections.Immutable (>= 1.4)
-    Aardvark.Base.FSharp (4.0.18)
-      Aardvark.Base (4.0.18)
-      Aardvark.Base.TypeProviders (4.0.18)
+    Aardvark.Base.FSharp (4.2.3)
+      Aardvark.Base (4.2.3)
+      Aardvark.Base.TypeProviders (4.2.3)
       DevILSharp (>= 0.2.4 < 0.3)
       FSharp.Core (>= 4.3 < 4.4)
       System.Dynamic.Runtime (>= 4.3 < 4.4)
-    Aardvark.Base.Incremental (4.0.18)
-      Aardvark.Base (4.0.18)
-      Aardvark.Base.FSharp (4.0.18)
-      Aardvark.Base.TypeProviders (4.0.18)
+    Aardvark.Base.Incremental (4.2.3)
+      Aardvark.Base (4.2.3)
+      Aardvark.Base.FSharp (4.2.3)
+      Aardvark.Base.TypeProviders (4.2.3)
       DevILSharp (>= 0.2.4 < 0.3)
       FSharp.Core (>= 4.3 < 4.4)
-    Aardvark.Base.Telemetry (4.0.18)
-    Aardvark.Base.TypeProviders (4.0.18)
+    Aardvark.Base.Telemetry (4.2.3)
+    Aardvark.Base.TypeProviders (4.2.3)
+      FSharp.Core (>= 4.3 < 4.4)
+    DevILSharp (0.2.4)
       FSharp.Core (>= 4.3 < 4.4)
     FSharp.Core (4.3.4)
-    Microsoft.NETCore.Platforms (2.1) - restriction: || (&& (== net471) (>= dnxcore50)) (&& (== net471) (< net45)) (== netcoreapp2.0) (== netstandard2.0)
+    Microsoft.NETCore.Platforms (2.1.1) - restriction: || (&& (== net471) (>= dnxcore50)) (&& (== net471) (< net45)) (== netcoreapp2.0) (== netstandard2.0)
     Microsoft.NETCore.Targets (2.1) - restriction: || (&& (== net471) (>= dnxcore50)) (&& (== net471) (< net45)) (== netcoreapp2.0) (== netstandard2.0)
     System.Collections (4.3) - restriction: || (&& (== net471) (>= dnxcore50)) (&& (== net471) (< net45)) (== netcoreapp2.0) (== netstandard2.0)
       Microsoft.NETCore.Platforms (>= 1.1) - restriction: || (&& (== net471) (>= dnxcore50)) (&& (== net471) (< net45)) (== netcoreapp2.0) (== netstandard2.0)
@@ -117,7 +119,7 @@ NUGET
       Microsoft.NETCore.Platforms (>= 1.1) - restriction: || (&& (== net471) (>= dnxcore50)) (&& (== net471) (< net45)) (== netcoreapp2.0) (== netstandard2.0)
       Microsoft.NETCore.Targets (>= 1.1) - restriction: || (&& (== net471) (>= dnxcore50)) (&& (== net471) (< net45)) (== netcoreapp2.0) (== netstandard2.0)
       System.Runtime (>= 4.3) - restriction: || (&& (== net471) (>= dnxcore50)) (&& (== net471) (< net45)) (== netcoreapp2.0) (== netstandard2.0)
-    System.Reflection.TypeExtensions (4.5) - restriction: || (&& (== net471) (>= dnxcore50)) (&& (== net471) (< net45)) (== netcoreapp2.0) (== netstandard2.0)
+    System.Reflection.TypeExtensions (4.5.1) - restriction: || (&& (== net471) (>= dnxcore50)) (&& (== net471) (< net45)) (== netcoreapp2.0) (== netstandard2.0)
     System.Resources.ResourceManager (4.3) - restriction: || (&& (== net471) (>= dnxcore50)) (&& (== net471) (< net45)) (== netcoreapp2.0) (== netstandard2.0)
       Microsoft.NETCore.Platforms (>= 1.1) - restriction: || (&& (== net471) (>= dnxcore50)) (&& (== net471) (< net45)) (== netcoreapp2.0) (== netstandard2.0)
       Microsoft.NETCore.Targets (>= 1.1) - restriction: || (&& (== net471) (>= dnxcore50)) (&& (== net471) (< net45)) (== netcoreapp2.0) (== netstandard2.0)
@@ -142,20 +144,18 @@ NUGET
       Microsoft.NETCore.Platforms (>= 1.1) - restriction: || (&& (== net471) (>= dnxcore50)) (&& (== net471) (< net45)) (== netcoreapp2.0) (== netstandard2.0)
       Microsoft.NETCore.Targets (>= 1.1) - restriction: || (&& (== net471) (>= dnxcore50)) (&& (== net471) (< net45)) (== netcoreapp2.0) (== netstandard2.0)
       System.Runtime (>= 4.3) - restriction: || (&& (== net471) (>= dnxcore50)) (&& (== net471) (< net45)) (== netcoreapp2.0) (== netstandard2.0)
-    DevILSharp (0.2.4)
-      FSharp.Core (>= 4.3 < 4.4)
 
 GROUP Build
 CONTENT: NONE
 RESTRICTION: == net45
 NUGET
   remote: https://api.nuget.org/v3/index.json
-    FAKE (4.63.2) - content: none
-    Mono.Cecil (0.10) - content: none
-    SourceLink.Fake (1.1) - content: none
+    FAKE (4.63.2)
+    Mono.Cecil (0.10.1)
+    SourceLink.Fake (1.1)
 GITHUB
   remote: aardvark-platform/aardvark.fake
-    FULLPROJECT (7bebbfdb07cbf4ec6426be3f813dc367a0614e6a)
+    FULLPROJECT (a67246f7ceec0cb8bc9e529addf3cf8701937665)
       FAKE (>= 4.63 < 4.64)
       Mono.Cecil (>= 0.10.0-beta6 < 0.11)
       SourceLink.Fake (>= 1.1 < 1.2)
