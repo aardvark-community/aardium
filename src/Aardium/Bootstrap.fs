@@ -189,9 +189,9 @@ module Aardium =
     
 
 
-    let feed = "https://vrvis.myget.org/F/aardvark_public/api/v2/package"
+    let feed = "https://api.nuget.org/v3/index.json"
     let packageBaseName = "Aardium"
-    let version = "1.0.15"
+    let version = "1.0.16"
 
     let private platform =
         match Environment.OSVersion with
