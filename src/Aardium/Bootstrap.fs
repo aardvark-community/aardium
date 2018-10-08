@@ -189,7 +189,7 @@ module Aardium =
     
 
 
-    let feed = "https://api.nuget.org/v3/index.json"
+    let feed = "https://www.nuget.org/api/v2/package"
     let packageBaseName = "Aardium"
     let version = "1.0.17"
 
@@ -228,7 +228,7 @@ module Aardium =
         let aardiumPath = Path.Combine(cachePath, arch, version)
         let info = DirectoryInfo aardiumPath
 
-        if not info.Exists then
+        if not info.Exists || Directory.GetFiles(aardiumPath).Length = 0 then
             info.Create()
 
             let fileName = sprintf "%s.%s.nupkg" packageName version
