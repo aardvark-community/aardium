@@ -191,7 +191,7 @@ module Aardium =
 
     let feed = "https://api.nuget.org/v3/index.json"
     let packageBaseName = "Aardium"
-    let version = "1.0.16"
+    let version = "1.0.17"
 
     let private platform =
         match Environment.OSVersion with
