@@ -174,6 +174,10 @@ module AardiumConfig =
             match cfg.title with    
                 | Some t -> yield! [| "--title"; "\"" + t + "\"" |]
                 | None -> ()
+                
+            match cfg.icon with    
+                | Some i -> yield! [| "--icon"; "\"" + i + "\"" |]
+                | None -> ()
 
             match cfg.menu with
                 | true -> yield "--menu"
