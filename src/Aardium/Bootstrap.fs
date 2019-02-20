@@ -136,6 +136,7 @@ type AardiumConfig =
         title       : Option<string>
         menu        : bool
         fullscreen  : bool
+        experimental: bool
     }
 
 module AardiumConfig =
@@ -149,6 +150,7 @@ module AardiumConfig =
             title = None
             menu = false
             fullscreen = false
+            experimental = false
         }
 
     let internal toArgs (cfg : AardiumConfig) =
@@ -179,6 +181,10 @@ module AardiumConfig =
 
             match cfg.fullscreen with
                 | true -> yield "--fullscreen"
+                | false -> ()
+
+            match cfg.experimental with
+                | true -> yield "--experimental"
                 | false -> ()
 
         |]
@@ -213,15 +219,18 @@ module Aardium =
             | Linux -> "Aardium"
             | Mac -> "Aardium.app"
 
-    let private cachePath =
-        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Aardium")
+    //let private cachePath =
+    //    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Aardium")
+
+    let mutable private cachePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Aardium")
 
     module Libc =
         open System.Runtime.InteropServices
         [<DllImport("libc")>]
         extern int chmod(string path, int mode)
-
-    let init() =
+        
+    let initPath (path : string) =
+        cachePath <- path //Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Aardium")
         let info = DirectoryInfo cachePath
         if not info.Exists then info.Create()
 
@@ -247,6 +256,9 @@ module Aardium =
                     let worked = Libc.chmod(Path.combine [aardiumPath; "tools"; "Aardium"], 0b111101101)
                     if worked <> 0 then Log.warn "chmod failed. consider to chmod +x Aardium"
                 | _ -> ()
+
+    let init() =
+        initPath (Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Aardium"))
 
     let runConfig (cfg : AardiumConfig)  =
         let aardiumPath = Path.Combine(cachePath, arch, version, "tools", exeName)
@@ -294,6 +306,10 @@ module Aardium =
         [<CustomOperation("menu")>]
         member x.Menu(cfg : AardiumConfig, v : bool) =
             { cfg with menu = v }
+            
+        [<CustomOperation("experimental")>]
+        member x.Experimental(cfg : AardiumConfig, v : bool) =
+            { cfg with experimental = v }
 
         member x.Run(cfg : AardiumConfig) =
             runConfig cfg

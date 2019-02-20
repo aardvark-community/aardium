@@ -18,7 +18,8 @@ const options =
   ['i' , 'icon=ARG'               , 'icon file'],
   ['t' , 'title=ARG'              , 'window title'],
   ['m' , 'menu'                   , 'display default menu'],
-  [''  , 'fullscreen'             , 'display fullscreen window']
+  [''  , 'fullscreen'             , 'display fullscreen window'],
+  ['e' , 'experimental'           , 'enable experimental webkit extensions' ]
 ];
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -43,6 +44,8 @@ function createWindow () {
     opt.title = "Aardvark rocks \\o/";
     preventTitleChange = false;
   }
+  
+  if(!opt.experimental) opt.experimental = false;
 
   // Create the browser window.
   mainWindow = 
@@ -56,8 +59,9 @@ function createWindow () {
 		webPreferences: { 
 			nodeIntegration: false, 
 			nativeWindowOpen: true,
-      webSecurity: false, 
-      devTools: true,
+			experimentalFeatures: opt.experimental,
+		    webSecurity: false, 
+		    devTools: true,
 			preload: path.join(__dirname, 'preload.js')
 		}
   });

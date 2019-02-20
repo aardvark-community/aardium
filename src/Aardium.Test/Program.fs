@@ -17,7 +17,8 @@ let main argv =
     Aardium.init()
 
     Aardium.run { 
-        url "http://ask.aardvark.graphics"
+        experimental true
+        url "https://developer.mozilla.org/en-US/docs/Web/CSS/backdrop-filter#Browser_compatibility"
     }
 
     0 
