@@ -9,3 +9,4 @@ paket-files
 **/.vs
 **/obj/
 bin
+/node_modules/.yarn-integrity
