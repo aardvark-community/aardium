@@ -19,14 +19,14 @@
   "main": "main.js",
   "repository": "https://github.com/electron/electron-quick-start",
   "dependencies": {
+    "electron-localshortcut": "^3.2.1",
     "node-getopt": "^0.3.2",
-    "node-shared-mem": "^1.0.5",
-    "electron-localshortcut": "^3.1.0"
+    "node-shared-mem": "^1.0.5"
   },
   "devDependencies": {
-    "electron": "^2.0.5",
-    "electron-packager": "~12.1.0",
-    "electron-rebuild": "^1.8.1",
+    "electron": "^7.1.9",
+    "electron-packager": "^14.2.0",
+    "electron-rebuild": "^1.8.8",
     "folder-zip-sync": "^1.0.5"
   }
 }
