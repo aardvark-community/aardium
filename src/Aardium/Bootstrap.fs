@@ -155,29 +155,10 @@ module AardiumConfig =
 
     let internal toArgs (cfg : AardiumConfig) =
         [|
-            match cfg.width with
-                | Some w -> yield! [| "-w"; string w |]
-                | None -> ()
-
-            match cfg.height with
-                | Some h -> yield! [| "-h"; string h |]
-                | None -> ()
-
-            match cfg.url with
-                | Some url -> yield! [| "--url"; "\"" + url + "\"" |]
-                | None -> ()
-
+        
             match cfg.debug with
                 | true -> yield "--debug"
                 | false -> ()
-            
-            match cfg.title with    
-                | Some t -> yield! [| "--title"; "\"" + t + "\"" |]
-                | None -> ()
-                
-            match cfg.icon with    
-                | Some i -> yield! [| "--icon"; "\"" + i + "\"" |]
-                | None -> ()
 
             match cfg.menu with
                 | true -> yield "--menu"
@@ -190,6 +171,28 @@ module AardiumConfig =
             match cfg.experimental with
                 | true -> yield "--experimental"
                 | false -> ()
+
+            match cfg.width with
+                | Some w -> yield! [| "--width=" + string w |]
+                | None -> ()
+
+            match cfg.height with
+                | Some h -> yield! [| "--height=" + string h |]
+                | None -> ()
+
+            match cfg.url with
+                | Some url -> yield! [| "--url=\"" + url + "\"" |]
+                | None -> ()
+
+            
+            match cfg.title with    
+                | Some t -> yield! [| "--title=\"" + t + "\"" |]
+                | None -> ()
+                
+            match cfg.icon with    
+                | Some i -> yield! [| "--icon=\"" + i + "\"" |]
+                | None -> ()
+                
 
         |]
 
