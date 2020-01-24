@@ -8,7 +8,7 @@ window.aardvark = aardvark;
 
 aardvark.openFileDialog = function(config, callback) {
 	if(!callback) callback = config;
-	dialog.showOpenDialog({properties: ['openFile', 'multiSelections']}, callback);
+	dialog.showOpenDialog({properties: ['openFile', 'multiSelections']}).then(e => callback(e.filePaths));
 };
 
 
