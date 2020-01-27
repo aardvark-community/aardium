@@ -10,7 +10,7 @@
   },
   "scripts": {
     "postinstall": "./node_modules/.bin/electron-rebuild node-shared-mem",
-    "start": "electron . ",
+    "start": "electron . --debug",
     "dist-win64": "electron-packager . Aardium --platform=win32 --arch=x64 --icon ./aardvark.ico --out dist --overwrite",
     "dist-linux64": "electron-packager . Aardium --platform=linux --arch=x64 --icon ./aardvark.ico --out dist --overwrite",
     "dist": "yarn dist-win64 && yarn dist-linux64",
@@ -21,7 +21,7 @@
   "dependencies": {
     "electron-localshortcut": "^3.2.1",
     "node-getopt": "^0.3.2",
-    "node-shared-mem": "^1.0.5"
+    "node-shared-mem": "^1.0.6"
   },
   "devDependencies": {
     "electron": "^7.1.9",
