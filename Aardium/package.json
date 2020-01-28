@@ -21,7 +21,7 @@
   "dependencies": {
     "electron-localshortcut": "^3.2.1",
     "node-getopt": "^0.3.2",
-    "node-shared-mem": "^1.0.6"
+    "node-shared-mem": "^1.0.7"
   },
   "devDependencies": {
     "electron": "^7.1.9",

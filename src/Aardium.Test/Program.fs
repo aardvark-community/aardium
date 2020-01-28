@@ -4,13 +4,6 @@ open System
 open Aardvark.Base
 open Aardium
 
-open System
-open System.IO
-open System.IO.Pipes
-open System.IO.MemoryMappedFiles
-open Microsoft.Win32.SafeHandles
-
-
 
 [<EntryPoint>]
 let main argv =

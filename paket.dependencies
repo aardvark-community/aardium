@@ -1,4 +1,4 @@
-framework: netstandard2.0, net471, netcoreapp2.0
+framework: netstandard2.0, net471, netcoreapp3.0
 source https://api.nuget.org/v3/index.json
 
 nuget FSharp.Core ~> 4.6.2
@@ -7,8 +7,6 @@ nuget Aardvark.Base.Incremental >= 4.5.8
 nuget Aardvark.Base.FSharp >= 4.5.8
 
 group Build
-framework: net45
-content: none
 source https://api.nuget.org/v3/index.json
-
-github aardvark-platform/aardvark.fake:v4-temp
+framework: netstandard2.0
+github aardvark-platform/aardvark.fake:v5

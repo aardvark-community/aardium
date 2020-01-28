@@ -1,10 +1,13 @@
+#r "paket: groupref Build //"
+#load ".fake/build.fsx/intellisense.fsx"
 #load @"paket-files/build/aardvark-platform/aardvark.fake/DefaultSetup.fsx"
 
-open Fake
 open System
 open System.IO
 open System.Diagnostics
 open Aardvark.Fake
+open Fake.Core
+open Fake.Core.TargetOperators
 
 do Environment.CurrentDirectory <- __SOURCE_DIRECTORY__
 
@@ -20,50 +23,52 @@ let npmName =
 
 let yarn (args : list<string>) =
     let yarn =
-        match Fake.ProcessHelper.tryFindFileOnPath yarnName with
+        match ProcessUtils.tryFindFileOnPath yarnName with
             | Some path -> path
             | None -> failwith "could not locate yarn"
 
-    let ret = 
-        Fake.ProcessHelper.ExecProcess (fun info ->
-            info.FileName <- yarn
-            info.WorkingDirectory <- "Aardium"
-            info.Arguments <- String.concat " " args
-            ()
-        ) TimeSpan.MaxValue
+    let ret : ProcessResult<_> = 
+        Command.RawCommand(yarn, Arguments.ofList args)
+        |> CreateProcess.fromCommand
+        |> CreateProcess.withWorkingDirectory "Aardium"
+        |> Proc.run
+        //ProcessHelper.ExecProcess (fun info ->
+        //     info.FileName <- yarn
+        //     info.WorkingDirectory <- "Aardium"
+        //     info.Arguments <- String.concat " " args
+        //     ()
+        // ) TimeSpan.MaxValue
 
-    if ret <> 0 then
+    if ret.ExitCode <> 0 then
         failwith "yarn failed"
 
 
-Target "InstallYarn" (fun () ->
+Target.create "InstallYarn" (fun _ ->
 
-    match Fake.ProcessHelper.tryFindFileOnPath yarnName with
+    match ProcessUtils.tryFindFileOnPath yarnName with
         | None ->
     
-            match Fake.ProcessHelper.tryFindFileOnPath npmName with
+            match ProcessUtils.tryFindFileOnPath npmName with
                 | Some npm ->
                     
                     let ret = 
-                        Fake.ProcessHelper.ExecProcess (fun info ->
-                            info.FileName <- npm
-                            info.Arguments <- "install -g yarn"
-                            ()
-                        ) TimeSpan.MaxValue
+                        Command.RawCommand(npm, Arguments.ofList ["install -g yarn"])
+                        |> CreateProcess.fromCommand
+                        |> Proc.run
 
-                    if ret <> 0 then
+                    if ret.ExitCode <> 0 then
                         failwith "npm install failed"
                 | None ->
                     failwith "could not locate npm"   
         | _ ->
-            tracefn "yarn already installed"
+            Trace.tracefn "yarn already installed"
 )
 
-Target "Yarn" (fun () ->
+Target.create "Yarn" (fun _ ->
     yarn []
 )
 
-Target "YarnPack" (fun () ->
+Target.create "YarnPack" (fun _ ->
     yarn ["dist"]
 )
 
