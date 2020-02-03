@@ -8,16 +8,16 @@ open System.Net.Http
 open System.Threading
 open System.Threading.Tasks
 open System.Diagnostics
-open Aardvark.Base
+
 
 [<Struct>]
-type Progress(received : Mem, total : Mem) =
+type Progress(received : int64, total : int64) =
     member x.Received = received
     member x.Total = total
-    member x.Relative = float received.Bytes / float total.Bytes
+    member x.Relative = float received / float total
 
     override x.ToString() =
-        sprintf "%.2f%%" (100.0 * float received.Bytes / float total.Bytes)
+        sprintf "%.2f%%" (100.0 * float received / float total)
 
 module Tools =
     
@@ -43,7 +43,7 @@ module Tools =
                 if f.HasValue then f.Value
                 else 1L <<< 30
                 
-            let mutable lastProgress = Progress(Mem.Zero, Mem len)
+            let mutable lastProgress = Progress(0L,len)
             progress lastProgress
             let sw = System.Diagnostics.Stopwatch.StartNew()
 
@@ -66,7 +66,7 @@ module Tools =
                 read <- read + int64 r
 
 
-                let p = Progress(Mem read, Mem len)
+                let p = Progress(read, len)
                 if sw.Elapsed.TotalSeconds >= 0.1 || p.Relative - lastProgress.Relative > 0.05 then
                     progress p
                     lastProgress <- p
@@ -80,7 +80,7 @@ module Tools =
         let t = new Thread(ThreadStart(f), IsBackground = true)
         t.Start()
 
-    let exec (file : string) (args : string[]) =
+    let exec (file : string) (logger : bool -> string -> unit) (args : string[]) =
         let info = 
             ProcessStartInfo(
                 file, 
@@ -120,8 +120,8 @@ module Tools =
             while true do
                 let msg = log.Take(cancel.Token)
                 match msg with
-                    | Log msg -> Report.Line("{0}", msg)
-                    | Error msg -> Report.Warn("{0}", msg)
+                    | Log msg -> logger false msg
+                    | Error msg -> logger true msg
         with :? OperationCanceledException ->
             ()
 
@@ -137,6 +137,7 @@ type AardiumConfig =
         menu        : bool
         fullscreen  : bool
         experimental: bool
+        log         : bool -> string -> unit
     }
 
 module AardiumConfig =
@@ -151,6 +152,7 @@ module AardiumConfig =
             menu = false
             fullscreen = false
             experimental = false
+            log = fun isError ln -> ()
         }
 
     let internal toArgs (cfg : AardiumConfig) =
@@ -198,16 +200,24 @@ module AardiumConfig =
 
 
 module Aardium =
+    open System.Runtime.InteropServices
 
     let feed = "https://www.nuget.org/api/v2/package"
     let packageBaseName = "Aardium"
     let version = "1.0.26"
 
+    [<Literal>]
+    let private Win = "Win32"
+    [<Literal>]
+    let private Linux = "Linux"
+    [<Literal>]
+    let private Darwin = "Darwin"
+
     let private platform =
-        match Environment.OSVersion with
-            | Windows -> "Win32"
-            | Linux -> "Linux"
-            | Mac -> "Darwin"
+        if RuntimeInformation.IsOSPlatform(OSPlatform.Windows) then Win
+        elif RuntimeInformation.IsOSPlatform(OSPlatform.Linux) then Linux
+        elif RuntimeInformation.IsOSPlatform(OSPlatform.OSX) then Darwin
+        else failwith "unsupported platform"
 
     let private arch =
         match sizeof<nativeint> with
@@ -218,10 +228,11 @@ module Aardium =
     let private packageName = sprintf "%s-%s-%s" packageBaseName platform arch
 
     let private exeName =
-        match Environment.OSVersion with
-            | Windows -> "Aardium.exe"
+        match platform with
+            | Win -> "Aardium.exe"
             | Linux -> "Aardium"
-            | Mac -> "Aardium.app"
+            | Darwin -> "Aardium.app"
+            | _ -> failwith "unsporrted platform"
 
     //let private cachePath =
     //    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Aardium")
@@ -248,17 +259,15 @@ module Aardium =
             let tempFile = Path.Combine(cachePath, arch, fileName)
             let url = sprintf "%s/%s/%s" feed packageName version
 
-            Log.startTimed "downloading %A" url
-            Tools.download (fun p -> Report.Progress(p.Relative))  url tempFile
-            Log.stop()
+            Console.Write("downloading")
+            Tools.download ignore  url tempFile
+            Console.WriteLine("done.")
 
-            Log.startTimed "unpacking"
             Tools.unzip tempFile aardiumPath
-            Log.stop()
-            match System.Environment.OSVersion with
-                | Linux | Mac -> 
-                    let worked = Libc.chmod(Path.combine [aardiumPath; "tools"; "Aardium"], 0b111101101)
-                    if worked <> 0 then Log.warn "chmod failed. consider to chmod +x Aardium"
+            match platform with
+                | Linux | Darwin -> 
+                    let worked = Libc.chmod(Path.Combine(aardiumPath, "tools", "Aardium"), 0b111101101)
+                    if worked <> 0 then printfn "chmod failed. consider to chmod +x Aardium"
                 | _ -> ()
 
     let init() =
@@ -267,7 +276,7 @@ module Aardium =
     let runConfig (cfg : AardiumConfig)  =
         let aardiumPath = Path.Combine(cachePath, arch, version, "tools", exeName)
         if File.Exists aardiumPath then
-            Tools.exec aardiumPath (AardiumConfig.toArgs cfg)
+            Tools.exec aardiumPath cfg.log (AardiumConfig.toArgs cfg) 
         else
             failwithf "could not locate aardium"
 
@@ -296,13 +305,15 @@ module Aardium =
             { cfg with height = Some h }
             
         [<CustomOperation("size")>]
-        member x.Size(cfg : AardiumConfig, s : V2i) =
-            { cfg with width = Some s.X; height = Some s.Y }
+        member inline x.Size(cfg : AardiumConfig, v : ^a) =
+            let w = (^a: (member P_X : int)(v))
+            let h = (^a: (member P_Y : int)(v))
+            { cfg with width = Some w; height = Some h }
             
         [<CustomOperation("debug")>]
         member x.Debug(cfg : AardiumConfig, v : bool) =
             { cfg with debug = v }
-            
+
         [<CustomOperation("fullscreen")>]
         member x.Fullscreen(cfg : AardiumConfig, v : bool) =
             { cfg with fullscreen = v }
