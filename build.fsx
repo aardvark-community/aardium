@@ -82,8 +82,6 @@ Target.create "YarnPack" (fun _ ->
         yarn ["dist-darwin64"]
         File.WriteAllBytes("Aardium/dist/Aardium-Linux-x64.tar.gz", [||]) |> ignore
         Directory.CreateDirectory "Aardium/dist/Aardium-linux-x64" |> ignore
-    else    
-        yarn ["dist"]
 )
 
 "InstallYarn" ==> "Yarn" ==> "YarnPack" ==> "CreatePackage"
