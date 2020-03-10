@@ -205,7 +205,7 @@ module Aardium =
 
     let feed = "https://www.nuget.org/api/v2/package"
     let packageBaseName = "Aardium"
-    let version = "1.0.27"
+    let version = "1.0.28"
 
     [<Literal>]
     let private Win = "Win32"
@@ -260,15 +260,25 @@ module Aardium =
             let tempFile = Path.Combine(cachePath, arch, fileName)
             let url = sprintf "%s/%s/%s" feed packageName version
 
-            Console.Write("downloading")
-            Tools.download ignore  url tempFile
-            Console.WriteLine("done.")
+            Console.Write("downloading aardium ...")
+            Tools.download ignore url tempFile
+            Console.WriteLine("")
 
             Tools.unzip tempFile aardiumPath
             match platform with
-                | Linux -> 
-                    let worked = Libc.chmod(Path.Combine(aardiumPath, "tools", "Aardium"), 0b111101101)
-                    if worked <> 0 then printfn "chmod failed. consider to chmod +x Aardium"
+                | Linux | Darwin -> 
+                    let outDir = Path.Combine(aardiumPath, "tools")
+                    let info = ProcessStartInfo("tar", "-zxvf Aardium-" + platform + "-" + arch + ".tar.gz -C ./")
+                    info.WorkingDirectory <- outDir
+                    info.UseShellExecute <- false
+                    info.CreateNoWindow <- true
+                    info.RedirectStandardError <- true
+                    info.RedirectStandardInput <- true
+                    info.RedirectStandardOutput <- true
+                    let proc = System.Diagnostics.Process.Start(info)
+                    proc.WaitForExit()
+                    if proc.ExitCode <> 0 then 
+                        proc.StandardError.ReadToEnd() |> printfn "ERROR: %s"
                 | _ -> ()
 
     let init() =
