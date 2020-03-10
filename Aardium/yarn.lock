@@ -1190,10 +1190,10 @@ node-gyp@^6.0.1:
     tar "^4.4.12"
     which "^1.3.1"
 
-node-shared-mem@^1.0.7:
-  version "1.0.7"
-  resolved "https://registry.yarnpkg.com/node-shared-mem/-/node-shared-mem-1.0.7.tgz#ff10e5cfbbf444a40b6136c5cd48ff49708d6dfe"
-  integrity sha512-cA0ZPAAShjUTEzvMBGYYDf5TvwMJLY87C/JYBO5kXL30XA+EFpIckbY7q1O28qG42G4LdoorI1bEO35mw92+8w==
+node-shared-mem@^1.0.8:
+  version "1.0.8"
+  resolved "https://registry.yarnpkg.com/node-shared-mem/-/node-shared-mem-1.0.8.tgz#85ba5c7a00bd33fd7ee818d06d137cadefb78276"
+  integrity sha512-dcJjlWjALkz0lKdr8vBSlhGrbTYFpZRZxaqSpwZ6Kf7GO+1aoX1t+VQhpkSlkUYcJPwU1tip5FeEvorRKV31RA==
   dependencies:
     bindings "~1.5.0"
     node-addon-api "^2.0.0"

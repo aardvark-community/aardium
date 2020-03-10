@@ -1,5 +1,5 @@
 type file
-id Aardium-Linux-x64
+id Aardium-Darwin-x64
 authors Aardvark Platform Team
 owners Aardvark Platform Team
 projectUrl http://github.com/aardvark-platform
@@ -8,4 +8,4 @@ version 1.0.0
 description
     Aardvark is an open-source platform for visual computing, real-time graphics and visualization.
 files
-	../Aardium/dist/Aardium-Linux-x64.tar.gz => tools
+	../Aardium/dist/Aardium-Darwin-x64.tar.gz => tools

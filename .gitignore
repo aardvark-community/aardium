@@ -1,3 +1,5 @@
+/.paket
+**/.DS_Store
 **/.ionide/
 Aardium/node_modules
 Aardium/dist

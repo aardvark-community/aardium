@@ -29,6 +29,7 @@ module Tools =
         try
             if Directory.Exists folder then Directory.Delete(folder, true)
             ZipFile.ExtractToDirectory(file, folder)
+            
         with _ ->
             if Directory.Exists folder then Directory.Delete(folder, true)
             reraise()
@@ -204,7 +205,7 @@ module Aardium =
 
     let feed = "https://www.nuget.org/api/v2/package"
     let packageBaseName = "Aardium"
-    let version = "1.0.26"
+    let version = "1.0.27"
 
     [<Literal>]
     let private Win = "Win32"
@@ -231,8 +232,8 @@ module Aardium =
         match platform with
             | Win -> "Aardium.exe"
             | Linux -> "Aardium"
-            | Darwin -> "Aardium.app"
-            | _ -> failwith "unsporrted platform"
+            | Darwin -> "Aardium.app/Contents/MacOS/Aardium"
+            | _ -> failwith "unsuporrted platform"
 
     //let private cachePath =
     //    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Aardium")
@@ -265,7 +266,7 @@ module Aardium =
 
             Tools.unzip tempFile aardiumPath
             match platform with
-                | Linux | Darwin -> 
+                | Linux -> 
                     let worked = Libc.chmod(Path.Combine(aardiumPath, "tools", "Aardium"), 0b111101101)
                     if worked <> 0 then printfn "chmod failed. consider to chmod +x Aardium"
                 | _ -> ()

@@ -5,6 +5,7 @@
 open System
 open System.IO
 open System.Diagnostics
+open System.Runtime.InteropServices
 open Aardvark.Fake
 open Fake.Core
 open Fake.Core.TargetOperators
@@ -69,7 +70,20 @@ Target.create "Yarn" (fun _ ->
 )
 
 Target.create "YarnPack" (fun _ ->
-    yarn ["dist"]
+    if RuntimeInformation.IsOSPlatform OSPlatform.Windows then 
+        yarn ["dist-win64"]
+        File.WriteAllBytes("Aardium/dist/Aardium-Linux-x64.tar.gz", [||]) |> ignore
+        File.WriteAllBytes("Aardium/dist/Aardium-Darwin-x64.tar.gz", [||]) |> ignore
+    if RuntimeInformation.IsOSPlatform OSPlatform.Linux then 
+        yarn ["dist-linux64"]
+        Directory.CreateDirectory "Aardium/dist/Aardium-win32-x64" |> ignore
+        File.WriteAllBytes("Aardium/dist/Aardium-Darwin-x64.tar.gz", [||]) |> ignore
+    if RuntimeInformation.IsOSPlatform OSPlatform.OSX then 
+        yarn ["dist-darwin64"]
+        File.WriteAllBytes("Aardium/dist/Aardium-Linux-x64.tar.gz", [||]) |> ignore
+        Directory.CreateDirectory "Aardium/dist/Aardium-linux-x64" |> ignore
+    else    
+        yarn ["dist"]
 )
 
 "InstallYarn" ==> "Yarn" ==> "YarnPack" ==> "CreatePackage"
