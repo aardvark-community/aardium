@@ -12,8 +12,8 @@
     "postinstall": "./node_modules/.bin/electron-rebuild node-shared-mem",
     "start": "electron . --debug",
     "dist-win64": "electron-packager . Aardium --platform=win32 --arch=x64 --icon ./aardvark.ico --out dist --overwrite",
-    "dist-linux64": "electron-packager . Aardium --platform=linux --arch=x64 --icon ./aardvark.ico --out dist --overwrite && cd dist/Aardium-linux-x64 && tar -zcvf ../Aardium-Linux-x64.tar.gz .",
-    "dist-darwin64": "electron-packager . Aardium --platform=darwin --arch=x64 --out dist --overwrite && cd dist/Aardium-darwin-x64 && tar -zcvf ../Aardium-Darwin-x64.tar.gz .",
+    "dist-linux64": "electron-packager . Aardium --platform=linux --arch=x64 --icon ./aardvark.png --out dist --overwrite && cd dist/Aardium-linux-x64 && tar -zcvf ../Aardium-Linux-x64.tar.gz .",
+    "dist-darwin64": "electron-packager . Aardium --platform=darwin --arch=x64 --icon ./aardvark.icns --out dist --overwrite && cd dist/Aardium-darwin-x64 && tar -zcvf ../Aardium-Darwin-x64.tar.gz .",
     "dist": "yarn dist-win64 && yarn dist-linux64 && yarn dist-darwin64",
     "zip": "yarn dist && folder-zip-sync dist/Aardium-win32-x64 dist/Aardium-win32-x64.zip && folder-zip-sync dist/Aardium-linux-x64 dist/Aardium-linux-x64.zip"
   },
