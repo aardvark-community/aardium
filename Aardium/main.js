@@ -31,9 +31,10 @@ let mainWindow
 function createWindow () {
 
   var plat = os.platform();
-  var iconExt = ".ico";
-  if(plat == 'linux') iconExt = ".png";
-  else if(plat == 'darwin') iconExt = ".icns";
+  var defaultIcon = "aardvark.ico";
+  console.warn(plat);
+  if(plat == 'linux') defaultIcon = "aardvark.png";
+  else if(plat == 'darwin') defaultIcon = "aardvark_128.png";
 
   var argv = process.argv;
   if(!argv) argv = [];
@@ -44,7 +45,7 @@ function createWindow () {
   if(!opt.width) opt.width = 1024;
   if(!opt.height) opt.height = 768;
   if(!opt.url) opt.url = "http://ask.aardvark.graphics";
-  if(!opt.icon) opt.icon = path.join(__dirname, 'aardvark' + iconExt);
+  if(!opt.icon) opt.icon = path.join(__dirname, defaultIcon);
   if(!opt.title) {
     opt.title = "Aardvark rocks \\o/";
     preventTitleChange = false;
@@ -81,6 +82,9 @@ function createWindow () {
 
 
   if(!opt.menu) mainWindow.setMenu(null);
+  if(plat == "darwin") {
+    electron.app.dock.setIcon(opt.icon);
+  }
   // if(process.argv.length > 2) url = process.argv[2];
   if(preventTitleChange) {
     mainWindow.on('page-title-updated', (e,c) => {
