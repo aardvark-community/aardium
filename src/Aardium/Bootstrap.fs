@@ -205,7 +205,7 @@ module Aardium =
 
     let feed = "https://www.nuget.org/api/v2/package"
     let packageBaseName = "Aardium"
-    let version = "1.0.28"
+    let version = "1.0.29"
 
     [<Literal>]
     let private Win = "Win32"
@@ -239,58 +239,68 @@ module Aardium =
     //    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Aardium")
 
     let mutable private cachePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Aardium")
+    let mutable private executablePath = ""
 
     module Libc =
         open System.Runtime.InteropServices
         [<DllImport("libc")>]
         extern int chmod(string path, int mode)
         
-    let initPath (path : string) =
-        cachePath <- path //Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Aardium")
+    let initPath (pp : string) =
+        let path = Path.GetFullPath pp
+        cachePath <- path
         let info = DirectoryInfo cachePath
         if not info.Exists then info.Create()
 
-        let aardiumPath = Path.Combine(cachePath, arch, version)
-        let info = DirectoryInfo aardiumPath
+        if File.Exists(Path.Combine(path, exeName)) then
+            executablePath <- Path.Combine(path, exeName)
+        else
+            let aardiumPath = Path.Combine(cachePath, arch, version)
 
-        if not info.Exists || Directory.GetFiles(aardiumPath).Length = 0 then
-            info.Create()
+            let info = DirectoryInfo aardiumPath
+            if info.Exists && File.Exists(Path.Combine(aardiumPath, exeName)) then
+                executablePath <- Path.Combine(aardiumPath, exeName)
 
-            let fileName = sprintf "%s.%s.nupkg" packageName version
-            let tempFile = Path.Combine(cachePath, arch, fileName)
-            let url = sprintf "%s/%s/%s" feed packageName version
+            else
+                info.Create()
+                let fileName = sprintf "%s.%s.nupkg" packageName version
+                let tempFile = Path.Combine(cachePath, arch, fileName)
+                let url = sprintf "%s/%s/%s" feed packageName version
 
-            Console.Write("downloading aardium ...")
-            Tools.download ignore url tempFile
-            Console.WriteLine("")
+                Console.Write("downloading aardium ...")
+                Tools.download ignore url tempFile
+                Console.WriteLine("")
 
-            Tools.unzip tempFile aardiumPath
-            match platform with
-                | Linux | Darwin -> 
-                    let outDir = Path.Combine(aardiumPath, "tools")
-                    let info = ProcessStartInfo("tar", "-zxvf Aardium-" + platform + "-" + arch + ".tar.gz -C ./")
-                    info.WorkingDirectory <- outDir
-                    info.UseShellExecute <- false
-                    info.CreateNoWindow <- true
-                    info.RedirectStandardError <- true
-                    info.RedirectStandardInput <- true
-                    info.RedirectStandardOutput <- true
-                    let proc = System.Diagnostics.Process.Start(info)
-                    proc.WaitForExit()
-                    if proc.ExitCode <> 0 then 
-                        proc.StandardError.ReadToEnd() |> printfn "ERROR: %s"
-                | _ -> ()
+                Tools.unzip tempFile aardiumPath
+                match platform with
+                    | Linux | Darwin -> 
+                        let outDir = Path.Combine(aardiumPath, "tools")
+                        let info = ProcessStartInfo("tar", "-zxvf Aardium-" + platform + "-" + arch + ".tar.gz -C ./")
+                        info.WorkingDirectory <- outDir
+                        info.UseShellExecute <- false
+                        info.CreateNoWindow <- true
+                        info.RedirectStandardError <- true
+                        info.RedirectStandardInput <- true
+                        info.RedirectStandardOutput <- true
+                        let proc = System.Diagnostics.Process.Start(info)
+                        proc.WaitForExit()
+                        if proc.ExitCode <> 0 then 
+                            proc.StandardError.ReadToEnd() |> printfn "ERROR: %s"
+                    | _ -> ()
+
+                if File.Exists(Path.Combine(aardiumPath, exeName)) then
+                    executablePath <- Path.Combine(aardiumPath, exeName)
+                else
+                    failwith "something went wrong"
 
     let init() =
         initPath (Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Aardium"))
 
     let runConfig (cfg : AardiumConfig)  =
-        let aardiumPath = Path.Combine(cachePath, arch, version, "tools", exeName)
-        if File.Exists aardiumPath then
-            Tools.exec aardiumPath cfg.log (AardiumConfig.toArgs cfg) 
+        if File.Exists executablePath then
+            Tools.exec executablePath cfg.log (AardiumConfig.toArgs cfg) 
         else
             failwithf "could not locate aardium"
-
 
     type AardiumBuilder() =
         member x.Yield(()) = AardiumConfig.empty

@@ -6,16 +6,15 @@
   "license": "MIT",
   "author": {
     "name": "The Aardvark Platform Team",
-    "url": "http://aardvark.graphics"
+    "url": "http://aardvarkians.com"
   },
   "scripts": {
     "postinstall": "./node_modules/.bin/electron-rebuild node-shared-mem",
     "start": "electron . --debug",
-    "dist-win64": "electron-packager . Aardium --platform=win32 --arch=x64 --icon ./aardvark.ico --out dist --overwrite",
-    "dist-linux64": "electron-packager . Aardium --platform=linux --arch=x64 --icon ./aardvark.png --out dist --overwrite && cd dist/Aardium-linux-x64 && tar -zcvf ../Aardium-Linux-x64.tar.gz .",
-    "dist-darwin64": "electron-packager . Aardium --platform=darwin --arch=x64 --icon ./aardvark.icns --out dist --overwrite && cd dist/Aardium-darwin-x64 && tar -zcvf ../Aardium-Darwin-x64.tar.gz .",
-    "dist": "yarn dist-win64 && yarn dist-linux64 && yarn dist-darwin64",
-    "zip": "yarn dist && folder-zip-sync dist/Aardium-win32-x64 dist/Aardium-win32-x64.zip && folder-zip-sync dist/Aardium-linux-x64 dist/Aardium-linux-x64.zip"
+    "dist:win32": "electron-packager . Aardium --platform=win32 --arch=x64 --icon ./aardvark.ico --out dist --overwrite",
+    "dist:linux": "electron-packager . Aardium --platform=linux --arch=x64 --icon ./aardvark.png --out dist --overwrite && cd dist/Aardium-linux-x64 && tar -zcvf ../Aardium-Linux-x64.tar.gz .",
+    "dist:darwin": "electron-packager . Aardium --platform=darwin --arch=x64 --icon ./aardvark.icns --out dist --overwrite && cd dist/Aardium-darwin-x64 && tar -zcvf ../Aardium-Darwin-x64.tar.gz .",
+    "dist": "run-script-os"
   },
   "main": "main.js",
   "repository": "https://github.com/electron/electron-quick-start",
@@ -28,6 +27,7 @@
     "electron": "^7.1.9",
     "electron-packager": "^14.2.0",
     "electron-rebuild": "^1.8.8",
-    "folder-zip-sync": "^1.0.5"
+    "folder-zip-sync": "^1.0.5",
+    "run-script-os": "^1.1.1"
   }
 }
