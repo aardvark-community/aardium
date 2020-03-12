@@ -1,4 +1,5 @@
 const electron = require('electron')
+const os = require('os')
 // Module to control application life.
 const app = electron.app
 // Module to create native browser window.
@@ -29,6 +30,10 @@ let mainWindow
 
 function createWindow () {
 
+  var plat = os.platform();
+  var iconExt = ".ico";
+  if(plat == 'linux') iconExt = ".png";
+  else if(plat == 'darwin') iconExt = ".icns";
 
   var argv = process.argv;
   if(!argv) argv = [];
@@ -39,7 +44,7 @@ function createWindow () {
   if(!opt.width) opt.width = 1024;
   if(!opt.height) opt.height = 768;
   if(!opt.url) opt.url = "http://ask.aardvark.graphics";
-  if(!opt.icon) opt.icon = path.join(__dirname, 'aardvark.ico');
+  if(!opt.icon) opt.icon = path.join(__dirname, 'aardvark' + iconExt);
   if(!opt.title) {
     opt.title = "Aardvark rocks \\o/";
     preventTitleChange = false;
