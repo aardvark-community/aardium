@@ -258,8 +258,8 @@ module Aardium =
             let aardiumPath = Path.Combine(cachePath, arch, version)
 
             let info = DirectoryInfo aardiumPath
-            if info.Exists && File.Exists(Path.Combine(aardiumPath, exeName)) then
-                executablePath <- Path.Combine(aardiumPath, exeName)
+            if info.Exists && File.Exists(Path.Combine(aardiumPath, "tools", exeName)) then
+                executablePath <- Path.Combine(aardiumPath, "tools", exeName)
 
             else
                 info.Create()
@@ -288,8 +288,8 @@ module Aardium =
                             proc.StandardError.ReadToEnd() |> printfn "ERROR: %s"
                     | _ -> ()
 
-                if File.Exists(Path.Combine(aardiumPath, exeName)) then
-                    executablePath <- Path.Combine(aardiumPath, exeName)
+                if File.Exists(Path.Combine(aardiumPath, "tools", exeName)) then
+                    executablePath <- Path.Combine(aardiumPath, "tools", exeName)
                 else
                     failwith "something went wrong"
 
