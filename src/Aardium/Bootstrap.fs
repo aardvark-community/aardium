@@ -8,6 +8,7 @@ open System.Net.Http
 open System.Threading
 open System.Threading.Tasks
 open System.Diagnostics
+open Microsoft.FSharp.Reflection
 
 
 [<Struct>]
@@ -138,6 +139,7 @@ type AardiumConfig =
         menu        : bool
         fullscreen  : bool
         experimental: bool
+        woptions    : Option<string>
         log         : bool -> string -> unit
     }
 
@@ -153,6 +155,7 @@ module AardiumConfig =
             menu = false
             fullscreen = false
             experimental = false
+            woptions = None
             log = fun isError ln -> ()
         }
 
@@ -160,41 +163,45 @@ module AardiumConfig =
         [|
         
             match cfg.debug with
-                | true -> yield "--debug"
-                | false -> ()
+            | true -> yield "--debug"
+            | false -> ()
 
             match cfg.menu with
-                | true -> yield "--menu"
-                | false -> ()
+            | true -> yield "--menu"
+            | false -> ()
 
             match cfg.fullscreen with
-                | true -> yield "--fullscreen"
-                | false -> ()
+            | true -> yield "--fullscreen"
+            | false -> ()
 
             match cfg.experimental with
-                | true -> yield "--experimental"
-                | false -> ()
+            | true -> yield "--experimental"
+            | false -> ()
 
             match cfg.width with
-                | Some w -> yield! [| "--width=" + string w |]
-                | None -> ()
+            | Some w -> yield! [| "--width=" + string w |]
+            | None -> ()
 
             match cfg.height with
-                | Some h -> yield! [| "--height=" + string h |]
-                | None -> ()
+            | Some h -> yield! [| "--height=" + string h |]
+            | None -> ()
 
             match cfg.url with
-                | Some url -> yield! [| "--url=\"" + url + "\"" |]
-                | None -> ()
+            | Some url -> yield! [| "--url=\"" + url + "\"" |]
+            | None -> ()
 
             
             match cfg.title with    
-                | Some t -> yield! [| "--title=\"" + t + "\"" |]
-                | None -> ()
+            | Some t -> yield! [| "--title=\"" + t + "\"" |]
+            | None -> ()
                 
             match cfg.icon with    
-                | Some i -> yield! [| "--icon=\"" + i + "\"" |]
-                | None -> ()
+            | Some i -> yield! [| "--icon=\"" + i + "\"" |]
+            | None -> ()
+
+            match cfg.woptions with
+            | Some w -> yield "--woptions=\""  + w.Replace("\"", "\\\"") + "\""
+            | None -> ()
                 
 
         |]
@@ -205,7 +212,7 @@ module Aardium =
 
     let feed = "https://www.nuget.org/api/v2/package"
     let packageBaseName = "Aardium"
-    let version = "1.0.29"
+    let version = "1.1.0"
 
     [<Literal>]
     let private Win = "Win32"
@@ -304,6 +311,40 @@ module Aardium =
 
     type AardiumBuilder() =
         member x.Yield(()) = AardiumConfig.empty
+
+        [<CustomOperation("windowoptions")>]
+        member x.WindowOptions(cfg : AardiumConfig, value : 'a) =
+            if FSharpType.IsRecord(typeof<'a>, true) then
+                let rec toJSON(t : Type) (value : obj) =
+                    if t = typeof<string> then 
+                        sprintf "\"%s\"" (unbox<string> value)
+                    elif t = typeof<bool> then
+                        if unbox value then "true" else "false"
+                    elif t = typeof<float> || t = typeof<int> then
+                        string value
+                    elif FSharpType.IsRecord(t, true) then
+                        FSharpType.GetRecordFields(typeof<'a>, true)
+                        |> Array.map (fun f -> 
+                            let value = toJSON f.PropertyType (f.GetValue value)
+                            sprintf "\"%s\": %s" f.Name value
+                        )
+                        |> String.concat ", "
+                        |> sprintf "{ %s }"
+                    else
+                        let seq = t.GetInterface(typedefof<seq<_>>.FullName)
+                        if isNull seq then failwith "unknown type"
+                        else
+                            let e = (value :?> System.Collections.IEnumerable).GetEnumerator()
+                            let t = seq.GetGenericArguments().[0]
+                            let all = System.Collections.Generic.List<obj>()
+                            while e.MoveNext() do
+                                all.Add e.Current
+                            all |> Seq.map (toJSON t) |> String.concat ", " |> sprintf "[%s]"
+                        
+                let json = toJSON typeof<'a> value
+                { cfg with woptions = Some json }
+            else
+                failwith "bad window options"
 
         [<CustomOperation("url")>]
         member x.Url(cfg : AardiumConfig, url : string) =

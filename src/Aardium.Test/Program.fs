@@ -22,6 +22,7 @@ let main argv =
         experimental true
         //size {| P_X = 800; P_Y = 600 |}
         url "https://developer.mozilla.org/en-US/docs/Web/CSS/backdrop-filter#Browser_compatibility"
+        windowoptions {| titleBarStyle = "customButtonsOnHover"; frame= false |}
     }
 
     0 

@@ -20,7 +20,9 @@ const options =
   ['t' , 'title=ARG'              , 'window title'],
   ['m' , 'menu'                   , 'display default menu'],
   [''  , 'fullscreen'             , 'display fullscreen window'],
-  ['e' , 'experimental'           , 'enable experimental webkit extensions' ]
+  ['e' , 'experimental'           , 'enable experimental webkit extensions' ],
+  [''  , 'frameless'              , 'frameless window'],
+  [''  , 'woptions=ARG'           , 'BrowserWindow options']
 ];
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -52,25 +54,32 @@ function createWindow () {
   }
   
   if(!opt.experimental) opt.experimental = false;
+  if(!opt.frameless) opt.frameless = false;
+
+  const defaultOptions =
+    {
+      width: parseInt(opt.width),
+      height: parseInt(opt.height),
+      title: opt.title,
+      icon: opt.icon,
+      fullscreen: opt.fullscreen,
+      fullscreenable: true,
+      frame: !opt.frameless,
+      webPreferences: { 
+        nodeIntegration: false, 
+        nativeWindowOpen: true,
+        experimentalFeatures: opt.experimental,
+          webSecurity: false, 
+          devTools: true,
+        preload: path.join(__dirname, 'preload.js')
+      }
+    };
+
+  const windowOptions = 
+    opt.woptions ? Object.assign({}, defaultOptions, JSON.parse(opt.woptions)) : defaultOptions;
 
   // Create the browser window.
-  mainWindow = 
-	new BrowserWindow({ 
-		width: parseInt(opt.width),
-		height: parseInt(opt.height),
-		title: opt.title,
-    icon: opt.icon,
-    fullscreen: opt.fullscreen,
-    fullscreenable: true,
-		webPreferences: { 
-			nodeIntegration: false, 
-			nativeWindowOpen: true,
-			experimentalFeatures: opt.experimental,
-		    webSecurity: false, 
-		    devTools: true,
-			preload: path.join(__dirname, 'preload.js')
-		}
-  });
+  mainWindow = new BrowserWindow(windowOptions);
 
   electron.app.on('browser-window-created',function(e,window) {
       window.setMenu(null);
