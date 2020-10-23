@@ -69,7 +69,7 @@ module Tools =
 
 
                 let p = Progress(read, len)
-                if sw.Elapsed.TotalSeconds >= 0.1 || p.Relative - lastProgress.Relative > 0.05 then
+                if sw.Elapsed.TotalSeconds >= 0.1 && p.Relative - lastProgress.Relative > 0.1 then
                     progress p
                     lastProgress <- p
                     sw.Restart()
@@ -275,7 +275,7 @@ module Aardium =
                 let url = sprintf "%s/%s/%s" feed packageName version
 
                 Console.Write("downloading aardium ...")
-                Tools.download ignore url tempFile
+                Tools.download (fun s -> Console.Write("\rdownloading aardium ... {0}% ", sprintf "%.0f" (s.Relative * 100.0))) url tempFile
                 Console.WriteLine("")
 
                 Tools.unzip tempFile aardiumPath
