@@ -19,6 +19,7 @@ const options =
   ['i' , 'icon=ARG'               , 'icon file'],
   ['t' , 'title=ARG'              , 'window title'],
   ['m' , 'menu'                   , 'display default menu'],
+  ['d' , 'hideDock'               , 'hides dock toolback on mac'],
   [''  , 'fullscreen'             , 'display fullscreen window'],
   ['e' , 'experimental'           , 'enable experimental webkit extensions' ],
   [''  , 'frameless'              , 'frameless window'],
@@ -28,7 +29,7 @@ const options =
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow
 
-
+var hideDock = false;
 
 function createWindow () {
 
@@ -51,6 +52,9 @@ function createWindow () {
   if(!opt.title) {
     opt.title = "Aardvark rocks \\o/";
     preventTitleChange = false;
+  }
+  if(opt.hideDock && plat == 'darwin'){
+    hideDock = true;
   }
   
   if(!opt.experimental) opt.experimental = false;
@@ -89,6 +93,10 @@ function createWindow () {
         e.preventDefault();
       });
   });
+  
+  if(hideDock) {
+    electron.app.dock.hide();
+  }
 
 
   if(!opt.menu) mainWindow.setMenu(null);
@@ -137,6 +145,7 @@ function createWindow () {
     mainWindow = null
   })
 }
+
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.

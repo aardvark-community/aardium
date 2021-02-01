@@ -138,6 +138,7 @@ type AardiumConfig =
         title       : Option<string>
         menu        : bool
         fullscreen  : bool
+        hideDock    : bool
         experimental: bool
         woptions    : Option<string>
         log         : bool -> string -> unit
@@ -155,6 +156,7 @@ module AardiumConfig =
             menu = false
             fullscreen = false
             experimental = false
+            hideDock = false
             woptions = None
             log = fun isError ln -> ()
         }
@@ -198,6 +200,11 @@ module AardiumConfig =
             match cfg.icon with    
             | Some i -> yield! [| "--icon=\"" + i + "\"" |]
             | None -> ()
+
+            match cfg.hideDock with    
+             | true -> yield! [| "--hideDock"|]
+             | false -> ()
+
 
             match cfg.woptions with
             | Some w -> yield "--woptions=\""  + w.Replace("\"", "\\\"") + "\""
