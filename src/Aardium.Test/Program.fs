@@ -16,13 +16,19 @@ let main argv =
         elif RuntimeInformation.IsOSPlatform OSPlatform.OSX then "Aardium-darwin-x64"
         else failwith "bad platform"
 
-    Aardium.initPath (Path.Combine(distPath, distName))
+    let exe = Path.Combine(distPath, distName)
+    Aardium.initPath exe
+
+    let ico = Path.Combine(exe,"resources","app","aardvark.ico")
 
     Aardium.run { 
         experimental true
         //size {| P_X = 800; P_Y = 600 |}
         url "https://developer.mozilla.org/en-US/docs/Web/CSS/backdrop-filter#Browser_compatibility"
-        windowoptions {| titleBarStyle = "customButtonsOnHover"; frame= false |}
+        //windowoptions {| titleBarStyle = "customButtonsOnHover"; frame= false |}
+        title "gugu"
+        icon ico
+
     }
 
     0 
