@@ -28,7 +28,8 @@ let main argv =
         //windowoptions {| titleBarStyle = "customButtonsOnHover"; frame= false |}
         title "gugu"
         icon ico
-
+        autoclose true // close when mainwindow closes
+        hideDock true // hide dock on mac
     }
 
     0 

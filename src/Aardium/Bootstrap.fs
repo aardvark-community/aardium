@@ -139,6 +139,7 @@ type AardiumConfig =
         menu        : bool
         fullscreen  : bool
         hideDock    : bool
+        autoclose   : bool
         experimental: bool
         woptions    : Option<string>
         log         : bool -> string -> unit
@@ -157,6 +158,7 @@ module AardiumConfig =
             fullscreen = false
             experimental = false
             hideDock = false
+            autoclose = false
             woptions = None
             log = fun isError ln -> ()
         }
@@ -202,9 +204,12 @@ module AardiumConfig =
             | None -> ()
 
             match cfg.hideDock with    
-             | true -> yield! [| "--hideDock"|]
-             | false -> ()
+            | true -> yield! [| "--hideDock"|]
+            | false -> ()
 
+            match cfg.autoclose with    
+            | true -> yield! [| "--autoclose"|]
+            | false -> ()
 
             match cfg.woptions with
             | Some w -> yield "--woptions=\""  + w.Replace("\"", "\\\"") + "\""
@@ -386,6 +391,14 @@ module Aardium =
         [<CustomOperation("fullscreen")>]
         member x.Fullscreen(cfg : AardiumConfig, v : bool) =
             { cfg with fullscreen = v }
+
+        [<CustomOperation("hideDock")>]
+        member x.HideDock(cfg : AardiumConfig, v : bool) =
+            { cfg with hideDock = v }
+
+        [<CustomOperation("autoclose")>]
+        member x.AutoClose(cfg : AardiumConfig, v : bool) =
+            { cfg with autoclose = v }
             
         [<CustomOperation("menu")>]
         member x.Menu(cfg : AardiumConfig, v : bool) =
