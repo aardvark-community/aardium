@@ -20,6 +20,7 @@ const options =
   ['t' , 'title=ARG'              , 'window title'],
   ['m' , 'menu'                   , 'display default menu'],
   ['d' , 'hideDock'               , 'hides dock toolback on mac'],
+  ['a' , 'autoclose'              , 'autoclose on main window close'],
   [''  , 'fullscreen'             , 'display fullscreen window'],
   ['e' , 'experimental'           , 'enable experimental webkit extensions' ],
   [''  , 'frameless'              , 'frameless window'],
@@ -96,6 +97,7 @@ function createWindow () {
   
   if(hideDock) {
     electron.app.dock.hide();
+    if(opt.autoclose) mainWindow.on('closed', () => electron.app.quit());
   }
 
 
@@ -151,6 +153,7 @@ function createWindow () {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', createWindow)
+
 
 // Quit when all windows are closed.
 app.on('window-all-closed', function () {
