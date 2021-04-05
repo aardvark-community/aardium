@@ -82,6 +82,36 @@ module Tools =
         let t = new Thread(ThreadStart(f), IsBackground = true)
         t.Start()
 
+    let start (file : string) (logger : bool -> string -> unit) (args : string[]) =
+        let info = 
+            ProcessStartInfo(
+                file, 
+                Arguments = String.concat " " args,
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
+            )
+            
+        info.EnvironmentVariables.["ELECTRON_ENABLE_LOGGING"] <- "1"
+        info.Environment.["ELECTRON_ENABLE_LOGGING"] <- "1"
+
+        let proc = Process.Start(info)
+        
+        proc.OutputDataReceived.Add (fun e ->
+            if not (String.IsNullOrWhiteSpace e.Data) then
+                logger false e.Data
+        )
+        
+        proc.ErrorDataReceived.Add (fun e ->
+            if not (String.IsNullOrWhiteSpace e.Data) then
+                logger true e.Data
+        )
+        
+        proc.BeginOutputReadLine()
+        proc.BeginErrorReadLine()
+        
+        proc
+
     let exec (file : string) (logger : bool -> string -> unit) (args : string[]) =
         let info = 
             ProcessStartInfo(
@@ -218,13 +248,22 @@ module AardiumConfig =
 
         |]
 
+type AardiumOffscreenServer internal (proc : Process, port : int) =
+    
+    member x.IsRunning = not proc.HasExited
+    member x.Port = port
+    member x.Stop() = if not proc.HasExited then proc.Kill()
+
+    member x.Dispose() = x.Stop()
+    interface System.IDisposable with
+        member x.Dispose() = x.Dispose()
 
 module Aardium =
     open System.Runtime.InteropServices
 
     let feed = "https://www.nuget.org/api/v2/package"
     let packageBaseName = "Aardium"
-    let version = "2.0.0"
+    let version = "2.0.1"
 
     [<Literal>]
     let private Win = "Win32"
@@ -266,51 +305,52 @@ module Aardium =
         extern int chmod(string path, int mode)
         
     let initPath (pp : string) =
-        let path = Path.GetFullPath pp
-        cachePath <- path
-        let info = DirectoryInfo cachePath
-        if not info.Exists then info.Create()
+        if executablePath = "" then
+            let path = Path.GetFullPath pp
+            cachePath <- path
+            let info = DirectoryInfo cachePath
+            if not info.Exists then info.Create()
 
-        if File.Exists(Path.Combine(path, exeName)) then
-            executablePath <- Path.Combine(path, exeName)
-        else
-            let aardiumPath = Path.Combine(cachePath, arch, version)
-
-            let info = DirectoryInfo aardiumPath
-            if info.Exists && File.Exists(Path.Combine(aardiumPath, "tools", exeName)) then
-                executablePath <- Path.Combine(aardiumPath, "tools", exeName)
-
+            if File.Exists(Path.Combine(path, exeName)) then
+                executablePath <- Path.Combine(path, exeName)
             else
-                info.Create()
-                let fileName = sprintf "%s.%s.nupkg" packageName version
-                let tempFile = Path.Combine(cachePath, arch, fileName)
-                let url = sprintf "%s/%s/%s" feed packageName version
+                let aardiumPath = Path.Combine(cachePath, arch, version)
 
-                Console.Write("downloading aardium ...")
-                Tools.download (fun s -> Console.Write("\rdownloading aardium ... {0}% ", sprintf "%.0f" (s.Relative * 100.0))) url tempFile
-                Console.WriteLine("")
-
-                Tools.unzip tempFile aardiumPath
-                match platform with
-                    | Linux | Darwin -> 
-                        let outDir = Path.Combine(aardiumPath, "tools")
-                        let info = ProcessStartInfo("tar", "-zxvf Aardium-" + platform + "-" + arch + ".tar.gz -C ./")
-                        info.WorkingDirectory <- outDir
-                        info.UseShellExecute <- false
-                        info.CreateNoWindow <- true
-                        info.RedirectStandardError <- true
-                        info.RedirectStandardInput <- true
-                        info.RedirectStandardOutput <- true
-                        let proc = System.Diagnostics.Process.Start(info)
-                        proc.WaitForExit()
-                        if proc.ExitCode <> 0 then 
-                            proc.StandardError.ReadToEnd() |> printfn "ERROR: %s"
-                    | _ -> ()
-
-                if File.Exists(Path.Combine(aardiumPath, "tools", exeName)) then
+                let info = DirectoryInfo aardiumPath
+                if info.Exists && File.Exists(Path.Combine(aardiumPath, "tools", exeName)) then
                     executablePath <- Path.Combine(aardiumPath, "tools", exeName)
+
                 else
-                    failwith "something went wrong"
+                    info.Create()
+                    let fileName = sprintf "%s.%s.nupkg" packageName version
+                    let tempFile = Path.Combine(cachePath, arch, fileName)
+                    let url = sprintf "%s/%s/%s" feed packageName version
+
+                    Console.Write("downloading aardium ...")
+                    Tools.download (fun s -> Console.Write("\rdownloading aardium ... {0}% ", sprintf "%.0f" (s.Relative * 100.0))) url tempFile
+                    Console.WriteLine("")
+
+                    Tools.unzip tempFile aardiumPath
+                    match platform with
+                        | Linux | Darwin -> 
+                            let outDir = Path.Combine(aardiumPath, "tools")
+                            let info = ProcessStartInfo("tar", "-zxvf Aardium-" + platform + "-" + arch + ".tar.gz -C ./")
+                            info.WorkingDirectory <- outDir
+                            info.UseShellExecute <- false
+                            info.CreateNoWindow <- true
+                            info.RedirectStandardError <- true
+                            info.RedirectStandardInput <- true
+                            info.RedirectStandardOutput <- true
+                            let proc = System.Diagnostics.Process.Start(info)
+                            proc.WaitForExit()
+                            if proc.ExitCode <> 0 then 
+                                proc.StandardError.ReadToEnd() |> printfn "ERROR: %s"
+                        | _ -> ()
+
+                    if File.Exists(Path.Combine(aardiumPath, "tools", exeName)) then
+                        executablePath <- Path.Combine(aardiumPath, "tools", exeName)
+                    else
+                        failwith "something went wrong"
 
     let init() =
         initPath (Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Aardium"))
@@ -413,4 +453,22 @@ module Aardium =
 
 
     let run = AardiumBuilder()
-        
+
+    let startOffscreenServer (port : int) (logger : bool -> string -> unit) =
+        let port = 
+            if port <> 0 then
+                port
+            else
+                let l = System.Net.Sockets.TcpListener(IPAddress.Loopback, 0)
+                l.Start()
+                let p = l.LocalEndpoint |> unbox<System.Net.IPEndPoint>
+                let port = p.Port
+                l.Stop()
+                port
+
+        if File.Exists executablePath then
+            logger false (sprintf "starting server with port %d" port)
+            let proc = Tools.start executablePath logger [|sprintf "--server=%d" port|]
+            new AardiumOffscreenServer(proc, port)
+        else
+            failwith "could not locate aardium"

@@ -1,0 +1,9 @@
+type project
+id Offler
+authors Aardvark Platform Team
+owners Aardvark Platform Team
+projectUrl http://github.com/aardvark-platform
+licenseUrl http://www.apache.org/licenses/LICENSE-2.0.txt
+description
+    Aardium is a lightweight Electron browser used by Aardvark.UI
+include-pdbs true

@@ -9,6 +9,8 @@ const electronLocalshortcut = require('electron-localshortcut');
 const path = require('path')
 const url = require('url')
 const getopt = require('node-getopt')
+const ws = require("nodejs-websocket")
+const { SharedMemory } = require('node-shared-mem');
 
 const options =
 [
@@ -24,7 +26,8 @@ const options =
   [''  , 'fullscreen'             , 'display fullscreen window'],
   ['e' , 'experimental'           , 'enable experimental webkit extensions' ],
   [''  , 'frameless'              , 'frameless window'],
-  [''  , 'woptions=ARG'           , 'BrowserWindow options']
+  [''  , 'woptions=ARG'           , 'BrowserWindow options'],
+  [''  , 'server=port'            , 'run server for offscreen rendering' ]
 ];
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -72,6 +75,7 @@ function createWindow () {
       frame: !opt.frameless,
       webPreferences: { 
         nodeIntegration: false, 
+        contextIsolation: false,
         nativeWindowOpen: true,
         enableRemoteModule: true,
         experimentalFeatures: opt.experimental,
@@ -148,29 +152,220 @@ function createWindow () {
   })
 }
 
+function runOffscreenServer(port) {
+    const dummyWin = new BrowserWindow({ show: false, webPreferences: { offscreen: true, contextIsolation: false } })
+
+    const server =
+        ws.createServer(function (conn) {
+            console.log("client connected");
+
+            let win = null;
+            let mapping = null;
+            let arr = null;
+            let connected = true;
+            let offset = 0;
+
+            function append(data) {
+                const oldOffset = offset;
+                const e = offset + data.byteLength;
+                if (e <= arr.byteLength) {
+                    arr.set(data, oldOffset);
+                    offset = e;
+                    return oldOffset
+                }
+                else {
+                    arr.set(data, 0)
+                    offset = data.byteLength;
+                    return 0;
+                }
+            }
+
+            function close() {
+                if (connected) {
+                    connected = false;
+                    console.log("client disconnected");
+                    if (win) try { win.close(); } catch {}
+                    if (mapping) try { mapping.close(); } catch { }
+                    mapping = null;
+                    win = null
+                }
+            }
+
+            function command(cmd) {
+                switch (cmd.command) {
+                    case "init":
+                        if (mapping) mapping.close();
+                        if (win) win.close();
+
+                        mapping = new SharedMemory(cmd.mapName, cmd.mapSize);
+                        win =
+                            new BrowserWindow({
+                                titleBarStyle: "hidden",
+                                backgroundThrottling: false,
+                                frame: false,
+                                useContentSize: true,
+                                show: false,
+                                transparent: true,
+                                webPreferences: { offscreen: true, devTools: true, contextIsolation: false },
+                                width: cmd.width,
+                                height: cmd.height
+                            })
+                        arr = new Uint8Array(mapping.buffer, 0);
+                       
+
+                        win.setContentSize(cmd.width, cmd.height);
+                        win.loadURL(cmd.url);
+                        win.webContents.setFrameRate(60.0);
+
+                        conn.send(JSON.stringify({ type: "initComplete" }));
+
+                        win.webContents.on('cursor-changed', (e, typ) => {
+                            if (!connected) return;
+                            conn.send(JSON.stringify({ type: "changecursor", name: typ }));
+                        });
+
+                        win.focus();
+
+                        win.webContents.on('paint', (event, dirty, image) => {
+                            if (!connected) return;
+                            const size = image.getSize();
+                            if (dirty.width < size.width && dirty.height < size.height) {
+                                const part = image.crop(dirty);
+                                const bmp = part.toBitmap();
+                                const offset = append(bmp);
+                                conn.send(
+                                    JSON.stringify({
+                                        type: "partialframe",
+                                        width: size.width,
+                                        height: size.height,
+                                        offset: offset,
+                                        byteLength: bmp.byteLength,
+                                        dx: dirty.x,
+                                        dy: dirty.y,
+                                        dw: dirty.width,
+                                        dh: dirty.height
+                                    })
+                                );
+                            }
+                            else {
+                                // full image
+                                const bmp = image.toBitmap();
+                                const offset = append(bmp);
+                                conn.send(
+                                    JSON.stringify({
+                                        type: "fullframe",
+                                        width: size.width,
+                                        height: size.height,
+                                        offset: offset,
+                                        byteLength: bmp.byteLength
+                                    })
+                                );
+                            }
+                        })
+                        break;
+                    case "requestfullframe":
+                        if (win) {
+                            win.webContents.capturePage().then(function (image) {
+                                if (!connected) return;
+                                const size = image.getSize();
+                                const bmp = image.toBitmap();
+                                const offset = append(bmp);
+                                conn.send(
+                                    JSON.stringify({
+                                        type: "fullframe",
+                                        width: size.width,
+                                        height: size.height,
+                                        offset: offset,
+                                        byteLength: bmp.byteLength
+                                    })
+                                );
+                            }).catch((e) => { console.error(e); });
+                        }
+                        break;
+                    case "opendevtools":
+                        if (!win) return;
+                        win.webContents.openDevTools({ mode: "detach" });
+                        break;
+                    case "resize":
+                        if(win) win.setContentSize(cmd.width, cmd.height, false);
+                        break;
+                    case "inputevent":
+                        win.webContents.sendInputEvent(cmd.event);
+                        break;
+                    case "setfocus":
+                        if (cmd.focus) win.focus();
+                        else win.blur();
+                        break;
+                    case "custom":
+                        const f = new Function("win", "electron", "socket", cmd.js);
+                        const res = f.call(win, win, electron, conn);
+                        if (cmd.id) {
+                            conn.send(JSON.stringify({ type: "result", id: cmd.id, result: res }));
+                        }
+                        break
+                    default:
+                        break;
+                }
+            }
+
+            conn.on("error", function (err) { close(); });
+            conn.on("close", function (code, reason) { close(); })
+            conn.on("text", function (str) {
+                try {
+                    const cmd = JSON.parse(str);
+                    if (cmd.command) command(cmd);
+                    else console.warn("bad command", cmd);
+                } catch(err) {
+                    console.error("bad command (not JSON)", str, err);
+                }
+            });
+        });
+
+    server.on("error", function (err) {
+        console.error(err);
+    });
+    server.listen(port, "127.0.0.1");
+}
+
+function ready() {
+  var argv = process.argv;
+  if(!argv) argv = [];
+
+  var res = getopt.create(options).bindHelp().parse(argv); 
+  var opt = res.options;
+  
+  if(opt.server) {
+      runOffscreenServer(opt.server);
+  }
+  else {
+    createWindow();
+      
+    // Quit when all windows are closed.
+    app.on('window-all-closed', function () {
+      // On OS X it is common for applications and their menu bar
+      // to stay active until the user quits explicitly with Cmd + Q
+      if (process.platform !== 'darwin') {
+        app.quit()
+      }
+    })
+
+    app.on('activate', function () {
+      // On OS X it's common to re-create a window in the app when the
+      // dock icon is clicked and there are no other windows open.
+      if (mainWindow === null) {
+        createWindow()
+      }
+    })
+
+    // In this file you can include the rest of your app's specific main process
+    // code. You can also put them in separate files and require them here.
+  }
+  
+}
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', createWindow)
+app.on('ready', ready)
 
 
-// Quit when all windows are closed.
-app.on('window-all-closed', function () {
-  // On OS X it is common for applications and their menu bar
-  // to stay active until the user quits explicitly with Cmd + Q
-  if (process.platform !== 'darwin') {
-    app.quit()
-  }
-})
-
-app.on('activate', function () {
-  // On OS X it's common to re-create a window in the app when the
-  // dock icon is clicked and there are no other windows open.
-  if (mainWindow === null) {
-    createWindow()
-  }
-})
-
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and require them here.
