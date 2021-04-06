@@ -41,7 +41,7 @@ let main argv =
     let mutable index = 0
     offler.Add(fun info ->
         printfn "image %03d" index
-        //offler.LastImage.SaveAsImage (sprintf @"C:\Users\Schorsch\Desktop\offler\%03d.png" index)
+        offler.LastImage.SaveAsImage (sprintf @"C:\Users\Schorsch\Desktop\offler\%03d.png" index)
         index <- index + 1
     )
 

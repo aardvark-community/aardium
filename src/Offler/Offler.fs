@@ -30,7 +30,6 @@ type OfflerImageInfo =
         totalWidth : int
         totalHeight : int
         data : nativeint
-        byteLength : int
     }
     member x.isFullFrame = x.width = x.totalWidth && x.height = x.totalHeight
 
@@ -95,7 +94,7 @@ module private ClientHelpers =
 
     type Message =
         | FullFrame of width : int * height : int * offset : int * byteLength : int
-        | PartialFrame of width : int * height : int * dirtyX : int * dirtyY : int * dirtyWidth : int * dirtyHeight : int * offset : int * byteLength : int
+        | PartialFrame of width : int * height : int * dirtyX : int * dirtyY : int * dirtyWidth : int * dirtyHeight : int * offset : int
         | InitComplete
         | ChangeCursor of name : string
         | Result of id : string * value : JToken
@@ -117,12 +116,11 @@ module private ClientHelpers =
                     let width : int = msg.GetValue("width") |> JToken.op_Explicit
                     let height : int = msg.GetValue("height") |> JToken.op_Explicit
                     let offset : int = msg.GetValue("offset") |> JToken.op_Explicit
-                    let byteLength : int = msg.GetValue("byteLength") |> JToken.op_Explicit
                     let dx : int = msg.GetValue("dx") |> JToken.op_Explicit
                     let dy : int = msg.GetValue("dy") |> JToken.op_Explicit
                     let dw : int = msg.GetValue("dw") |> JToken.op_Explicit
                     let dh : int = msg.GetValue("dh") |> JToken.op_Explicit
-                    PartialFrame(width, height, dx, dy, dw, dh, offset, byteLength)
+                    PartialFrame(width, height, dx, dy, dw, dh, offset)
                     
                 | "initComplete" ->
                     InitComplete
@@ -274,13 +272,14 @@ module private ClientHelpers =
 
 type OfflerInfo =
     {
-        width   : int
-        height  : int
-        url     : string
+        width       : int
+        height      : int
+        url         : string
+        incremental : bool
     }
 
 
-type Offler internal(ws : WebSocket, shared : ISharedMemory, url : string, width : int, height : int) =
+type Offler internal(ws : WebSocket, shared : ISharedMemory, incremental : bool, url : string, width : int, height : int) =
     
     static let mutable logger : bool -> string -> unit = fun _ _ -> ()
 
@@ -337,9 +336,10 @@ type Offler internal(ws : WebSocket, shared : ISharedMemory, url : string, width
         )
 
     let updateImage (x : int) (y : int) (width : int) (height : int) (data : nativeint) =
-        NativeVolume.using lastImage.Volume (fun pFull ->
-            let pDst = pFull.SubVolume(V3l(x, y, 0), V3l(width, height, 4))
-            let pSrc = NativeVolume<byte>(NativePtr.ofNativeInt data, VolumeInfo(0L, V3l(width, height, 4), V3l(4, 4 * width, 1)))
+        NativeVolume.using lastImage.Volume (fun pDstFull ->
+            let pSrcFull = NativeVolume<byte>(NativePtr.ofNativeInt data, VolumeInfo(0L, V3l(lastImage.Size, 4), V3l(4, 4 * lastImage.Size.X, 1)))
+            let pSrc = pSrcFull.SubVolume(V3l(x, y, 0), V3l(width, height, 4))
+            let pDst = pDstFull.SubVolume(V3l(x, y, 0), V3l(width, height, 4))
             NativeVolume.copy pSrc pDst
         )
 
@@ -371,18 +371,16 @@ type Offler internal(ws : WebSocket, shared : ISharedMemory, url : string, width
                                 x = 0; y = 0
                                 width = width; height = height
                                 totalWidth = width; totalHeight = height
-                                byteLength = byteLength
                                 data = ptr
                             }
 
-                        | PartialFrame(width, height, dx, dy, dw, dh, offset, byteLength) ->
+                        | PartialFrame(width, height, dx, dy, dw, dh, offset) ->
                             let ptr = shared.Pointer + nativeint offset
                             updateImage dx dy dw dh ptr
                             images.Trigger {
                                 x = dx; y = dy
                                 width = dw; height = dh
                                 totalWidth = width; totalHeight = height
-                                byteLength = byteLength
                                 data = ptr
                             }
                         | ChangeCursor name ->
@@ -556,7 +554,8 @@ type Offler internal(ws : WebSocket, shared : ISharedMemory, url : string, width
         let mapping = SharedMemory.createNew mapSize
 
         let command = 
-            sprintf "{ \"command\": \"init\", \"mapName\": \"%s\", \"mapSize\": %d, \"width\": %d, \"height\": %d, \"url\": \"%s\" }" 
+            sprintf "{ \"command\": \"init\", \"incremental\": %s, \"mapName\": \"%s\", \"mapSize\": %d, \"width\": %d, \"height\": %d, \"url\": \"%s\" }"
+                (if info.incremental then "true" else "false")
                 mapping.Name 
                 mapping.Size
                 info.width
@@ -567,7 +566,7 @@ type Offler internal(ws : WebSocket, shared : ISharedMemory, url : string, width
         let reply = ws.ReceiveString() |> Async.RunSynchronously
         match Message.unpickle reply with
         | InitComplete ->
-            new Offler(ws, mapping, info.url, info.width, info.height)
+            new Offler(ws, mapping, info.incremental, info.url, info.width, info.height)
         | _ ->
             failwithf "initialization failed: %A" reply
-            new Offler(ws, mapping, info.url, info.width, info.height)
+            new Offler(ws, mapping, info.incremental, info.url, info.width, info.height)

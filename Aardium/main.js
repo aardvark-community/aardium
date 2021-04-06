@@ -153,6 +153,7 @@ function createWindow () {
 }
 
 function runOffscreenServer(port) {
+    // process gets killed otherwise
     const dummyWin = new BrowserWindow({ show: false, webPreferences: { offscreen: true, contextIsolation: false } })
 
     const server =
@@ -164,17 +165,20 @@ function runOffscreenServer(port) {
             let arr = null;
             let connected = true;
             let offset = 0;
+            let lastOffset = -1;
 
             function append(data) {
                 const oldOffset = offset;
                 const e = offset + data.byteLength;
                 if (e <= arr.byteLength) {
                     arr.set(data, oldOffset);
+                    lastOffset = oldOffset;
                     offset = e;
                     return oldOffset
                 }
                 else {
                     arr.set(data, 0)
+                    lastOffset = 0;
                     offset = data.byteLength;
                     return 0;
                 }
@@ -225,21 +229,38 @@ function runOffscreenServer(port) {
                         });
 
                         win.focus();
+                        const partialFrames = cmd.incremental || false;
 
                         win.webContents.on('paint', (event, dirty, image) => {
                             if (!connected) return;
                             const size = image.getSize();
-                            if (dirty.width < size.width && dirty.height < size.height) {
+                            if (partialFrames && dirty.width < size.width && dirty.height < size.height && lastOffset >= 0) {
                                 const part = image.crop(dirty);
                                 const bmp = part.toBitmap();
-                                const offset = append(bmp);
+                                const partSize = part.getSize();
+
+                                // update affected part in last frame
+                                let srcIndex = 0
+                                let dstIndex = lastOffset + 4 * (dirty.x + size.width * dirty.y);
+                                const jy = 4 * (size.width - dirty.width)
+                                for (y = 0; y < partSize.height; y++) {
+                                    for (x = 0; x < partSize.width; x++) {
+                                        // BGRA
+                                        arr[dstIndex++] = bmp[srcIndex++];
+                                        arr[dstIndex++] = bmp[srcIndex++];
+                                        arr[dstIndex++] = bmp[srcIndex++];
+                                        arr[dstIndex++] = bmp[srcIndex++];
+                                    }
+                                    dstIndex += jy;
+                                }
+
                                 conn.send(
                                     JSON.stringify({
                                         type: "partialframe",
                                         width: size.width,
                                         height: size.height,
-                                        offset: offset,
-                                        byteLength: bmp.byteLength,
+                                        offset: lastOffset,
+                                        byteLength: 0,
                                         dx: dirty.x,
                                         dy: dirty.y,
                                         dw: dirty.width,
