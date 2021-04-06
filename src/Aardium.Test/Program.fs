@@ -36,6 +36,7 @@ let main argv =
             url = "https://www.w3schools.com/css/css3_animations.asp"
             width = 1920
             height = 1080
+            incremental = true
         }
 
     let mutable index = 0
