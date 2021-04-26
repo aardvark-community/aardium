@@ -96,7 +96,8 @@ module Tools =
         info.Environment.["ELECTRON_ENABLE_LOGGING"] <- "1"
 
         let proc = Process.Start(info)
-        
+        FSys.Process.attachChild proc 
+
         proc.OutputDataReceived.Add (fun e ->
             if not (String.IsNullOrWhiteSpace e.Data) then
                 logger false e.Data
@@ -126,6 +127,8 @@ module Tools =
         info.Environment.["ELECTRON_ENABLE_LOGGING"] <- "1"
 
         let proc = Process.Start(info)
+        FSys.Process.attachChild proc
+
         use log = new System.Collections.Concurrent.BlockingCollection<Message>()
 
         proc.OutputDataReceived.Add (fun e ->
