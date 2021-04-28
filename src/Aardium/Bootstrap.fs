@@ -266,7 +266,7 @@ module Aardium =
 
     let feed = "https://www.nuget.org/api/v2/package"
     let packageBaseName = "Aardium"
-    let version = "2.0.4"
+    let version = "2.0.5"
 
     [<Literal>]
     let private Win = "Win32"
