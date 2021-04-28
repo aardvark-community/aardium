@@ -329,15 +329,18 @@ module Aardium =
                     let tempFile = Path.Combine(cachePath, arch, fileName)
                     let url = sprintf "%s/%s/%s" feed packageName version
 
-                    Console.Write("downloading aardium ...")
+                    Console.WriteLine("downloading aardium: " + url)
                     Tools.download (fun s -> Console.Write("\rdownloading aardium ... {0}% ", sprintf "%.0f" (s.Relative * 100.0))) url tempFile
                     Console.WriteLine("")
+                    Console.WriteLine("downloaded: " + tempFile)
 
                     Tools.unzip tempFile aardiumPath
                     match platform with
                         | Linux | Darwin -> 
+                            let command = "-zxvf Aardium-" + platform + "-" + arch + ".tar.gz -C ./"
                             let outDir = Path.Combine(aardiumPath, "tools")
-                            let info = ProcessStartInfo("tar", "-zxvf Aardium-" + platform + "-" + arch + ".tar.gz -C ./")
+                            Console.WriteLine("workdir: " + outDir + "- " + "tar " + command)
+                            let info = ProcessStartInfo("tar", command)
                             info.WorkingDirectory <- outDir
                             info.UseShellExecute <- false
                             info.CreateNoWindow <- true
@@ -348,12 +351,16 @@ module Aardium =
                             proc.WaitForExit()
                             if proc.ExitCode <> 0 then 
                                 proc.StandardError.ReadToEnd() |> printfn "ERROR: %s"
+                            Console.WriteLine("untared")
                         | _ -> ()
 
-                    if File.Exists(Path.Combine(aardiumPath, "tools", exeName)) then
-                        executablePath <- Path.Combine(aardiumPath, "tools", exeName)
+
+                    let path = Path.Combine(aardiumPath, "tools", exeName)
+
+                    if File.Exists(path) then
+                        executablePath <- path
                     else
-                        failwith "something went wrong"
+                        failwithf "could not find executable after download: %s" path
 
     let init() =
         initPath (Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Aardium"))

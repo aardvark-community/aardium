@@ -1,0 +1,265 @@
+ 0: initializing aardvark ........................................................................
+ 0:   System Information:
+ 0:     System:      Darwin 20.5.0 Darwin Kernel Version 20.5.0: Thu Apr 15 05:31:18 PDT 2021; root:xnu-7195.120.38.111.1~4/RELEASE_ARM64_T8101
+ 0:     Processor:   8 core x64
+ 0:     Process:     x64
+ 0:     Framework:   .NET Core 3.1.11
+ 0:   Loading plugins ............................................................................
+ 0:     using cache dir: /Users/hs/.config/Aardvark/Cache
+ 0:     [LoadPlugins] Using plugin cache file name: /Users/hs/.config/Aardvark/Cache/Plugins/Aardium.Test_1.0.0.0_plugins.bin
+ 0:     [ReadCacheFile] loaded cache file: /Users/hs/.config/Aardvark/Cache/Plugins/Aardium.Test_1.0.0.0_plugins.bin
+ 0:     [GetPluginAssemblyPaths] Ignoring assembly System.Reflection.Metadata due to filter
+ 0:     [GetPluginAssemblyPaths] Ignoring assembly System.Text.Encodings.Web due to filter
+ 0:     [GetPluginAssemblyPaths] Ignoring assembly System.Text.Json due to filter
+ 0:     [GetPluginAssemblyPaths] Ignoring assembly System.Runtime.CompilerServices.Unsafe due to filter
+ 0:     [GetPluginAssemblyPaths] Ignoring assembly System.Collections.Immutable due to filter
+ 0:     [GetPluginAssemblyPaths] Ignoring assembly Microsoft.Bcl.AsyncInterfaces due to filter
+ 0:     [GetPluginAssemblyPaths] cache found for: /Users/hs/Desktop/aardvark/aardium/bin/Debug/netcoreapp3.1/FSharp.Data.Adaptive.dll
+ 0:     [GetPluginAssemblyPaths] retrying to load because not in cache /Users/hs/Desktop/aardvark/aardium/bin/Debug/netcoreapp3.1/Aardium.Test.dll
+ 0:     [GetPluginAssemblyPaths] cache found for: /Users/hs/Desktop/aardvark/aardium/bin/Debug/netcoreapp3.1/SixLabors.ImageSharp.dll
+ 0:     [GetPluginAssemblyPaths] retrying to load because not in cache /Users/hs/Desktop/aardvark/aardium/bin/Debug/netcoreapp3.1/Aardium.dll
+ 0:     [GetPluginAssemblyPaths] cache found for: /Users/hs/Desktop/aardvark/aardium/bin/Debug/netcoreapp3.1/FsPickler.dll
+ 0:     [GetPluginAssemblyPaths] cache found for: /Users/hs/Desktop/aardvark/aardium/bin/Debug/netcoreapp3.1/Aardvark.Base.Tensors.CSharp.dll
+ 0:     [GetPluginAssemblyPaths] retrying to load because not in cache /Users/hs/Desktop/aardvark/aardium/bin/Debug/netcoreapp3.1/Offler.dll
+ 0:     [GetPluginAssemblyPaths] cache found for: /Users/hs/Desktop/aardvark/aardium/bin/Debug/netcoreapp3.1/Aardvark.Base.TypeProviders.dll
+ 0:     [GetPluginAssemblyPaths] cache found for: /Users/hs/Desktop/aardvark/aardium/bin/Debug/netcoreapp3.1/Aardvark.Base.Tensors.dll
+ 0:     [GetPluginAssemblyPaths] cache found for: /Users/hs/Desktop/aardvark/aardium/bin/Debug/netcoreapp3.1/Newtonsoft.Json.dll
+ 0:     [GetPluginAssemblyPaths] cache found for: /Users/hs/Desktop/aardvark/aardium/bin/Debug/netcoreapp3.1/DevILSharp.dll
+ 0:     [GetPluginAssemblyPaths] cache found for: /Users/hs/Desktop/aardvark/aardium/bin/Debug/netcoreapp3.1/Aardvark.Base.FSharp.dll
+ 0:     [GetPluginAssemblyPaths] cache found for: /Users/hs/Desktop/aardvark/aardium/bin/Debug/netcoreapp3.1/Aardvark.Base.Telemetry.dll
+ 0:     [GetPluginAssemblyPaths] cache found for: /Users/hs/Desktop/aardvark/aardium/bin/Debug/netcoreapp3.1/FSharp.Core.dll
+ 0:     [GetPluginAssemblyPaths] cache found for: /Users/hs/Desktop/aardvark/aardium/bin/Debug/netcoreapp3.1/Aardvark.Base.dll
+ 0:     [GetPluginAssemblyPaths] cache found for: /Users/hs/Desktop/aardvark/aardium/bin/Debug/netcoreapp3.1/FSys.dll
+ 0:   Loading plugins .................................................................... 0.207 s
+ 0:   [Introspection] Ignoring assembly System.Runtime due to filter
+ 0:   [Introspection] Ignoring assembly System.Runtime due to filter
+ 0:   [Introspection] Ignoring assembly System.IO.MemoryMappedFiles due to filter
+ 0:   [Introspection] Ignoring assembly System.IO.Pipes due to filter
+ 0:   [Introspection] Ignoring assembly System.Diagnostics.Process due to filter
+ 0:   [Introspection] Ignoring assembly System.Security.Cryptography.X509Certificates due to filter
+ 0:   [Introspection] Ignoring assembly System.Runtime.Extensions due to filter
+ 0:   [Introspection] Ignoring assembly System.Memory due to filter
+ 0:   [Introspection] Ignoring assembly System.Buffers due to filter
+ 0:   [Introspection] Ignoring assembly System.Diagnostics.Tools due to filter
+ 0:   [Introspection] Ignoring assembly System.Collections due to filter
+ 0:   [Introspection] Ignoring assembly System.Collections.NonGeneric due to filter
+ 0:   [Introspection] Ignoring assembly System.Collections.Concurrent due to filter
+ 0:   [Introspection] Ignoring assembly System.ObjectModel due to filter
+ 0:   [Introspection] Ignoring assembly System.Collections.Specialized due to filter
+ 0:   [Introspection] Ignoring assembly System.ComponentModel.TypeConverter due to filter
+ 0:   [Introspection] Ignoring assembly System.ComponentModel.EventBasedAsync due to filter
+ 0:   [Introspection] Ignoring assembly System.ComponentModel.Primitives due to filter
+ 0:   [Introspection] Ignoring assembly System.ComponentModel due to filter
+ 0:   [Introspection] Ignoring assembly Microsoft.Win32.Primitives due to filter
+ 0:   [Introspection] Ignoring assembly System.Console due to filter
+ 0:   [Introspection] Ignoring assembly System.Data.Common due to filter
+ 0:   [Introspection] Ignoring assembly System.Runtime.InteropServices due to filter
+ 0:   [Introspection] Ignoring assembly System.Diagnostics.TraceSource due to filter
+ 0:   [Introspection] Ignoring assembly System.Diagnostics.Contracts due to filter
+ 0:   [Introspection] Ignoring assembly System.Diagnostics.Debug due to filter
+ 0:   [Introspection] Ignoring assembly System.Diagnostics.TextWriterTraceListener due to filter
+ 0:   [Introspection] Ignoring assembly System.Diagnostics.FileVersionInfo due to filter
+ 0:   [Introspection] Ignoring assembly System.Diagnostics.StackTrace due to filter
+ 0:   [Introspection] Ignoring assembly System.Diagnostics.Tracing due to filter
+ 0:   [Introspection] Ignoring assembly System.Drawing.Primitives due to filter
+ 0:   [Introspection] Ignoring assembly System.Linq.Expressions due to filter
+ 0:   [Introspection] Ignoring assembly System.IO.Compression.Brotli due to filter
+ 0:   [Introspection] Ignoring assembly System.IO.Compression due to filter
+ 0:   [Introspection] Ignoring assembly System.IO.Compression.ZipFile due to filter
+ 0:   [Introspection] Ignoring assembly System.IO.FileSystem due to filter
+ 0:   [Introspection] Ignoring assembly System.IO.FileSystem.DriveInfo due to filter
+ 0:   [Introspection] Ignoring assembly System.IO.FileSystem.Watcher due to filter
+ 0:   [Introspection] Ignoring assembly System.IO.IsolatedStorage due to filter
+ 0:   [Introspection] Ignoring assembly System.Linq due to filter
+ 0:   [Introspection] Ignoring assembly System.Linq.Queryable due to filter
+ 0:   [Introspection] Ignoring assembly System.Linq.Parallel due to filter
+ 0:   [Introspection] Ignoring assembly System.Threading.Thread due to filter
+ 0:   [Introspection] Ignoring assembly System.Net.Requests due to filter
+ 0:   [Introspection] Ignoring assembly System.Net.Primitives due to filter
+ 0:   [Introspection] Ignoring assembly System.Net.HttpListener due to filter
+ 0:   [Introspection] Ignoring assembly System.Net.ServicePoint due to filter
+ 0:   [Introspection] Ignoring assembly System.Net.NameResolution due to filter
+ 0:   [Introspection] Ignoring assembly System.Net.WebClient due to filter
+ 0:   [Introspection] Ignoring assembly System.Net.Http due to filter
+ 0:   [Introspection] Ignoring assembly System.Net.WebHeaderCollection due to filter
+ 0:   [Introspection] Ignoring assembly System.Net.WebProxy due to filter
+ 0:   [Introspection] Ignoring assembly System.Net.Mail due to filter
+ 0:   [Introspection] Ignoring assembly System.Net.NetworkInformation due to filter
+ 0:   [Introspection] Ignoring assembly System.Net.Ping due to filter
+ 0:   [Introspection] Ignoring assembly System.Net.Security due to filter
+ 0:   [Introspection] Ignoring assembly System.Net.Sockets due to filter
+ 0:   [Introspection] Ignoring assembly System.Net.WebSockets.Client due to filter
+ 0:   [Introspection] Ignoring assembly System.Net.WebSockets due to filter
+ 0:   [Introspection] Ignoring assembly System.Runtime.Numerics due to filter
+ 0:   [Introspection] Ignoring assembly System.Numerics.Vectors due to filter
+ 0:   [Introspection] Ignoring assembly System.Threading.Tasks due to filter
+ 0:   [Introspection] Ignoring assembly System.Reflection.DispatchProxy due to filter
+ 0:   [Introspection] Ignoring assembly System.Reflection.Emit due to filter
+ 0:   [Introspection] Ignoring assembly System.Reflection.Emit.ILGeneration due to filter
+ 0:   [Introspection] Ignoring assembly System.Reflection.Emit.Lightweight due to filter
+ 0:   [Introspection] Ignoring assembly System.Reflection.Primitives due to filter
+ 0:   [Introspection] Ignoring assembly System.Resources.ResourceManager due to filter
+ 0:   [Introspection] Ignoring assembly System.Resources.Writer due to filter
+ 0:   [Introspection] Ignoring assembly System.Runtime.CompilerServices.VisualC due to filter
+ 0:   [Introspection] Ignoring assembly System.Runtime.InteropServices.RuntimeInformation due to filter
+ 0:   [Introspection] Ignoring assembly System.Runtime.Serialization.Primitives due to filter
+ 0:   [Introspection] Ignoring assembly System.Runtime.Serialization.Xml due to filter
+ 0:   [Introspection] Ignoring assembly System.Runtime.Serialization.Json due to filter
+ 0:   [Introspection] Ignoring assembly System.Runtime.Serialization.Formatters due to filter
+ 0:   [Introspection] Ignoring assembly System.Security.Claims due to filter
+ 0:   [Introspection] Ignoring assembly System.Security.Cryptography.Algorithms due to filter
+ 0:   [Introspection] Ignoring assembly System.Security.Cryptography.Csp due to filter
+ 0:   [Introspection] Ignoring assembly System.Security.Cryptography.Encoding due to filter
+ 0:   [Introspection] Ignoring assembly System.Security.Cryptography.Primitives due to filter
+ 0:   [Introspection] Ignoring assembly System.Security.Principal due to filter
+ 0:   [Introspection] Ignoring assembly System.Text.Encoding.Extensions due to filter
+ 0:   [Introspection] Ignoring assembly System.Text.RegularExpressions due to filter
+ 0:   [Introspection] Ignoring assembly System.Threading due to filter
+ 0:   [Introspection] Ignoring assembly System.Threading.Overlapped due to filter
+ 0:   [Introspection] Ignoring assembly System.Threading.ThreadPool due to filter
+ 0:   [Introspection] Ignoring assembly System.Threading.Tasks.Parallel due to filter
+ 0:   [Introspection] Ignoring assembly System.Threading.Timer due to filter
+ 0:   [Introspection] Ignoring assembly System.Transactions.Local due to filter
+ 0:   [Introspection] Ignoring assembly System.Web.HttpUtility due to filter
+ 0:   [Introspection] Ignoring assembly System.Xml.ReaderWriter due to filter
+ 0:   [Introspection] Ignoring assembly System.Xml.XDocument due to filter
+ 0:   [Introspection] Ignoring assembly System.Xml.XmlSerializer due to filter
+ 0:   [Introspection] Ignoring assembly System.Xml.XPath.XDocument due to filter
+ 0:   [Introspection] Ignoring assembly System.Xml.XPath due to filter
+ 0:   [Introspection] Ignoring assembly System.Runtime.Numerics due to filter
+ 0:   [Introspection] Ignoring assembly System.Runtime due to filter
+ 0:   [Introspection] Ignoring assembly System.Runtime.Extensions due to filter
+ 0:   [Introspection] Ignoring assembly System.Diagnostics.Debug due to filter
+ 0:   [Introspection] Ignoring assembly System.Collections.Concurrent due to filter
+ 0:   [Introspection] Ignoring assembly System.Collections due to filter
+ 0:   [Introspection] Ignoring assembly System.Threading.Tasks due to filter
+ 0:   [Introspection] Ignoring assembly System.Security.Cryptography.Algorithms due to filter
+ 0:   [Introspection] Ignoring assembly System.Linq due to filter
+ 0:   [Introspection] Ignoring assembly System.Runtime.Serialization.Primitives due to filter
+ 0:   [Introspection] Ignoring assembly System.Xml.ReaderWriter due to filter
+ 0:   [Introspection] Ignoring assembly System.Collections.Immutable due to filter
+ 0:   [Introspection] Ignoring assembly System.Text.RegularExpressions due to filter
+ 0:   [Introspection] Ignoring assembly System.Runtime.Serialization.Formatters due to filter
+ 0:   [Introspection] Ignoring assembly System.Reflection.Metadata due to filter
+ 0:   [Introspection] Ignoring assembly System.Xml.XDocument due to filter
+ 0:   [Introspection] Ignoring assembly System.Runtime.InteropServices.RuntimeInformation due to filter
+ 0:   [Introspection] Ignoring assembly System.IO.Compression due to filter
+ 0:   [Introspection] Ignoring assembly System.Runtime.InteropServices due to filter
+ 0:   [Introspection] Ignoring assembly System.Diagnostics.Process due to filter
+ 0:   [Introspection] Ignoring assembly System.Linq.Expressions due to filter
+ 0:   [Introspection] Ignoring assembly System.Text.Json due to filter
+ 0:   [Introspection] Ignoring assembly System.ObjectModel due to filter
+ 0:   [Introspection] Ignoring assembly System.ComponentModel.TypeConverter due to filter
+ 0:   [Introspection] Ignoring assembly System.Threading due to filter
+ 0:   [Introspection] Ignoring assembly System.Console due to filter
+ 0:   [Introspection] Ignoring assembly System.ComponentModel.Primitives due to filter
+ 0:   [Introspection] Ignoring assembly System.Security.Cryptography.Primitives due to filter
+ 0:   [Introspection] Ignoring assembly System.Net.WebClient due to filter
+ 0:   [Introspection] Ignoring assembly System.IO.FileSystem due to filter
+ 0:   [Introspection] Ignoring assembly System.IO.Compression.ZipFile due to filter
+ 0:   [Introspection] Ignoring assembly System.Runtime.Loader due to filter
+ 0:   [Introspection] Ignoring assembly System.Runtime.Intrinsics due to filter
+ 0:   [Introspection] Ignoring assembly System.Threading.Thread due to filter
+ 0:   [Introspection] Ignoring assembly System.Diagnostics.StackTrace due to filter
+ 0:   [Introspection] Ignoring assembly System.Runtime due to filter
+ 0:   [Introspection] Ignoring assembly System.Resources.ResourceManager due to filter
+ 0:   [Introspection] Ignoring assembly System.Runtime.Extensions due to filter
+ 0:   [Introspection] Ignoring assembly System.Diagnostics.Debug due to filter
+ 0:   [Introspection] Ignoring assembly System.Collections due to filter
+ 0:   [Introspection] Ignoring assembly System.Numerics.Vectors due to filter
+ 0:   [Introspection] Ignoring assembly System.Runtime.InteropServices due to filter
+ 0:   [Introspection] Ignoring assembly System.Threading.Tasks.Parallel due to filter
+ 0:   [Introspection] Ignoring assembly System.Runtime.Intrinsics due to filter
+ 0:   [Introspection] Ignoring assembly System.Threading.Tasks due to filter
+ 0:   [Introspection] Ignoring assembly System.Collections.Concurrent due to filter
+ 0:   [Introspection] Ignoring assembly System.Linq due to filter
+ 0:   [Introspection] Ignoring assembly System.Security.Cryptography.Algorithms due to filter
+ 0:   [Introspection] Ignoring assembly System.Buffers due to filter
+ 0:   [Introspection] Ignoring assembly System.IO.Compression due to filter
+ 0:   [Introspection] Ignoring assembly System.Diagnostics.Tools due to filter
+ 0:   [Introspection] Ignoring assembly System.Memory due to filter
+ 0:   [Introspection] Ignoring assembly System.Runtime.CompilerServices.Unsafe due to filter
+ 0:   [Introspection] Ignoring assembly System.Security.Cryptography.Primitives due to filter
+ 0:   [Introspection] Ignoring assembly System.IO.FileSystem due to filter
+ 0:   [Introspection] Ignoring assembly System.Threading due to filter
+ 0:   [Introspection] Ignoring assembly System.Reflection.Emit.ILGeneration due to filter
+ 0:   [Introspection] Ignoring assembly System.Runtime due to filter
+ 0:   [Introspection] Ignoring assembly System.Threading due to filter
+ 0:   [Introspection] Ignoring assembly System.Reflection due to filter
+ 0:   [Introspection] Ignoring assembly System.Globalization due to filter
+ 0:   [Introspection] Ignoring assembly System.Reflection.Emit.Lightweight due to filter
+ 0:   [Introspection] Ignoring assembly System.Reflection.Primitives due to filter
+ 0:   [Introspection] Ignoring assembly System.Runtime due to filter
+ 0:   [Introspection] Ignoring assembly System.Threading due to filter
+ 0:   [Introspection] Ignoring assembly System.Reflection.Emit.Lightweight due to filter
+ 0:   [Introspection] Ignoring assembly System.Reflection.Emit.ILGeneration due to filter
+ 0:   [Introspection] Ignoring assembly System.Reflection due to filter
+ 0:   [Introspection] Ignoring assembly System.Collections due to filter
+ 0:   [Introspection] Ignoring assembly System.Reflection.Primitives due to filter
+ 0:   [Introspection] Ignoring assembly System.Diagnostics.Debug due to filter
+ 0:   [Introspection] Ignoring assembly System.Collections.Concurrent due to filter
+ 0:   [Introspection] Ignoring assembly System.Threading.Thread due to filter
+ 0:   [Introspection] Ignoring assembly System.Globalization due to filter
+ 0:   [Introspection] Ignoring assembly System.Runtime.Extensions due to filter
+ 0:   [Introspection] Ignoring assembly System.Console due to filter
+ 0:   [Introspection] Ignoring assembly System.IO due to filter
+ 0:   [Introspection] Ignoring assembly System.Reflection.Emit due to filter
+ 0:   [Introspection] Ignoring assembly System.Reflection.Emit.ILGeneration due to filter
+ 0:   [Introspection] Ignoring assembly System.Runtime.Extensions due to filter
+ 0:   [Introspection] Ignoring assembly System.Runtime due to filter
+ 0:   [Introspection] Ignoring assembly System.Console due to filter
+ 0:   [Introspection] Ignoring assembly System.IO due to filter
+ 0:   [Introspection] Ignoring assembly System.Threading due to filter
+ 0:   [Introspection] Ignoring assembly System.Globalization due to filter
+ 0:   [Introspection] Ignoring assembly System.Reflection due to filter
+ 0:   [Introspection] Ignoring assembly System.Reflection.Emit.Lightweight due to filter
+ 0:   [Introspection] Ignoring assembly System.Runtime due to filter
+ 0:   [Introspection] Ignoring assembly System.Reflection due to filter
+ 0:   [Introspection] Ignoring assembly System.Runtime.Extensions due to filter
+ 0:   [Introspection] Ignoring assembly System.Runtime due to filter
+ 0:   [Introspection] Ignoring assembly System.Memory due to filter
+ 0:   [Introspection] Ignoring assembly System.Globalization due to filter
+ 0:   [Introspection] Ignoring assembly System.Console due to filter
+ 0:   [Introspection] Ignoring assembly System.IO due to filter
+ 0:   [Introspection] Ignoring assembly System.Reflection due to filter
+ 0:   [Introspection] Ignoring assembly System.Runtime.Extensions due to filter
+ 0:   [Introspection] Ignoring assembly System.Runtime.InteropServices.RuntimeInformation due to filter
+ 0:   [Introspection] Ignoring assembly System.Console due to filter
+ 0:   [Introspection] Ignoring assembly System.Diagnostics.Debug due to filter
+ 0:   [cache miss] Aardium.Test, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+ 0:   [cache hit ] FSharp.Core, Version=4.7.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+ 0:   [cache hit ] netstandard, Version=2.1.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51
+ 0:   [cache miss] Offler, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+ 0:   [cache hit ] Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed
+ 0:   [cache miss] Aardium, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+ 0:   [cache hit ] FSys, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+ 0:   [cache hit ] Aardvark.Base.Tensors, Version=5.1.0.0, Culture=neutral, PublicKeyToken=null
+ 0:   initializing PixImageSharp ......................................................... 0.031 s
+ 0:   [cache hit ] Aardvark.Base.Tensors.CSharp, Version=5.1.0.0, Culture=neutral, PublicKeyToken=null
+ 0:   [cache hit ] Aardvark.Base, Version=5.1.0.0, Culture=neutral, PublicKeyToken=null
+ 0:   [cache hit ] Aardvark.Base.Telemetry, Version=5.1.0.0, Culture=neutral, PublicKeyToken=null
+ 0:   [cache hit ] SixLabors.ImageSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=d998eea7b14cab13
+ 0:   [cache hit ] Aardvark.Base.FSharp, Version=5.1.0.0, Culture=neutral, PublicKeyToken=null
+ 0:   initializing CustomPicklerProvider .........................................................
+ 0:     [cache miss] Aardium.Test, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+ 0:     [cache hit ] FSharp.Core, Version=4.7.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+ 0:     [cache hit ] netstandard, Version=2.1.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51
+ 0:     [cache miss] Offler, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+ 0:     [cache hit ] Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed
+ 0:     [cache miss] Aardium, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+ 0:     [cache hit ] FSys, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+ 0:     [cache hit ] Aardvark.Base.Tensors, Version=5.1.0.0, Culture=neutral, PublicKeyToken=null
+ 0:     [cache hit ] Aardvark.Base.Tensors.CSharp, Version=5.1.0.0, Culture=neutral, PublicKeyToken=null
+ 0:     [cache hit ] Aardvark.Base, Version=5.1.0.0, Culture=neutral, PublicKeyToken=null
+ 0:     [cache hit ] Aardvark.Base.Telemetry, Version=5.1.0.0, Culture=neutral, PublicKeyToken=null
+ 0:     [cache hit ] SixLabors.ImageSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=d998eea7b14cab13
+ 0:     [cache hit ] Aardvark.Base.FSharp, Version=5.1.0.0, Culture=neutral, PublicKeyToken=null
+ 0:     [cache hit ] FsPickler, Version=5.3.2.0, Culture=neutral, PublicKeyToken=null
+ 0:     [cache hit ] FSharp.Data.Adaptive, Version=1.2.0.0, Culture=neutral, PublicKeyToken=null
+ 0:     [cache hit ] Aardvark.Base.TypeProviders, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+ 0:     installing pickler: Aardvark.Base.Picklers.AdaptivePicklers
+ 0:   initializing CustomPicklerProvider ................................................. 0.046 s
+ 0:   [cache hit ] FsPickler, Version=5.3.2.0, Culture=neutral, PublicKeyToken=null
+ 0:   [cache hit ] FSharp.Data.Adaptive, Version=1.2.0.0, Culture=neutral, PublicKeyToken=null
+ 0:   [cache hit ] Aardvark.Base.TypeProviders, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+ 0: initializing aardvark ................................................................ 0.437 s

@@ -22,8 +22,8 @@ let main argv =
         else failwith "bad platform"
 
     let exe = Path.Combine(distPath, distName)
-    Aardium.initPath exe
-    //Aardium.init()
+    //Aardium.initPath exe
+    Aardium.init()
 
     Offler.Logger <- fun _ msg ->
         printfn "[Offler] %s" msg
