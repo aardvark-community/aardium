@@ -266,7 +266,7 @@ module Aardium =
 
     let feed = "https://www.nuget.org/api/v2/package"
     let packageBaseName = "Aardium"
-    let version = "2.0.2"
+    let version = "2.0.4"
 
     [<Literal>]
     let private Win = "Win32"
@@ -363,7 +363,9 @@ module Aardium =
                         failwithf "could not find executable after download: %s" path
 
     let init() =
-        initPath (Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Aardium"))
+        let path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), (sprintf "Aardium-%s" (version.Replace(".","_"))))
+        Console.WriteLine("Init Aardium at: " + path)
+        initPath path
 
     let runConfig (cfg : AardiumConfig)  =
         if File.Exists executablePath then
