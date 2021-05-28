@@ -266,8 +266,12 @@ module Aardium =
 
     let feed = "https://www.nuget.org/api/v2/package"
     let packageBaseName = "Aardium"
-    let version = "2.0.5"
-
+    let version = 
+        if RuntimeInformation.IsOSPlatform(OSPlatform.Windows) then "2.0.5"
+        elif RuntimeInformation.IsOSPlatform(OSPlatform.Linux) then "2.0.5"
+        elif RuntimeInformation.IsOSPlatform(OSPlatform.OSX) then "2.0.6"
+        else failwith "unsupported platform"
+    
     [<Literal>]
     let private Win = "Win32"
     [<Literal>]
@@ -336,7 +340,13 @@ module Aardium =
 
                     Tools.unzip tempFile aardiumPath
                     match platform with
-                        | Linux | Darwin -> 
+                        | Darwin ->
+                            let zip = Path.Combine(aardiumPath, "Aardium-1.0.0-mac")
+                            let outDir = Path.Combine(aardiumPath, "tools")
+                            Console.WriteLine(sprintf "unziping %s to %s" zip outDir)
+                            Tools.unzip zip outDir
+                            Console.WriteLine("unzipped")
+                        | Linux -> 
                             let command = "-zxvf Aardium-" + platform + "-" + arch + ".tar.gz -C ./"
                             let outDir = Path.Combine(aardiumPath, "tools")
                             Console.WriteLine("workdir: " + outDir + "- " + "tar " + command)
