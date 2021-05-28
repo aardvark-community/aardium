@@ -1,4 +1,5 @@
 /.paket
+Aardium/.env
 **/.DS_Store
 **/.ionide/
 Aardium/node_modules

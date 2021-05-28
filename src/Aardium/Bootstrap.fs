@@ -114,6 +114,7 @@ module Tools =
         proc
 
     let exec (file : string) (logger : bool -> string -> unit) (args : string[]) =
+        //printfn "exec: %s %A" file args
         let info = 
             ProcessStartInfo(
                 file, 
@@ -269,7 +270,7 @@ module Aardium =
     let version = 
         if RuntimeInformation.IsOSPlatform(OSPlatform.Windows) then "2.0.5"
         elif RuntimeInformation.IsOSPlatform(OSPlatform.Linux) then "2.0.5"
-        elif RuntimeInformation.IsOSPlatform(OSPlatform.OSX) then "2.0.6"
+        elif RuntimeInformation.IsOSPlatform(OSPlatform.OSX) then "2.0.7"
         else failwith "unsupported platform"
     
     [<Literal>]
@@ -337,16 +338,38 @@ module Aardium =
                     Tools.download (fun s -> Console.Write("\rdownloading aardium ... {0}% ", sprintf "%.0f" (s.Relative * 100.0))) url tempFile
                     Console.WriteLine("")
                     Console.WriteLine("downloaded: " + tempFile)
-
+                    Console.WriteLine(sprintf "unzipping %s to %s" tempFile aardiumPath)
                     Tools.unzip tempFile aardiumPath
+
                     match platform with
-                        | Darwin ->
-                            let zip = Path.Combine(aardiumPath, "Aardium-1.0.0-mac")
+                        (*| Darwin ->
+                            
+                            let zip = Path.Combine(aardiumPath, "tools", "Aardium-1.0.0-mac.zip")
+                            let mutable retryCount = 0
+                            Console.WriteLine(sprintf "looking for; %s" zip)
+                            printfn "exists: %A" (File.Exists zip) 
                             let outDir = Path.Combine(aardiumPath, "tools")
-                            Console.WriteLine(sprintf "unziping %s to %s" zip outDir)
-                            Tools.unzip zip outDir
-                            Console.WriteLine("unzipped")
-                        | Linux -> 
+                            Console.WriteLine(sprintf "unzipping using tar %s to %s" zip outDir)
+                            //ZipFile.ExtractToDirectory(zip, outDir)
+
+                            let command = "-zxvf " + zip + " -C ./"
+                            let outDir = Path.Combine(aardiumPath, "tools")
+                            Console.WriteLine("workdir: " + outDir + "- " + "tar " + command)
+                            let info = ProcessStartInfo("tar", command)
+                            info.WorkingDirectory <- outDir
+                            info.UseShellExecute <- false
+                            info.CreateNoWindow <- true
+                            info.RedirectStandardError <- true
+                            info.RedirectStandardInput <- true
+                            info.RedirectStandardOutput <- true
+                            let proc = System.Diagnostics.Process.Start(info)
+                            proc.WaitForExit()
+                            if proc.ExitCode <> 0 then 
+                                proc.StandardError.ReadToEnd() |> printfn "ERROR: %s"
+                            Console.WriteLine("untared")
+
+                            Console.WriteLine("unzipped")*)
+                        | Linux | Darwin ->
                             let command = "-zxvf Aardium-" + platform + "-" + arch + ".tar.gz -C ./"
                             let outDir = Path.Combine(aardiumPath, "tools")
                             Console.WriteLine("workdir: " + outDir + "- " + "tar " + command)
