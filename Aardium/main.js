@@ -6,11 +6,15 @@ const app = electron.app
 const BrowserWindow = electron.BrowserWindow
 const electronLocalshortcut = require('electron-localshortcut');
 
+
+//app.allowRendererProcessReuse = false;
+
+
+
 const path = require('path')
 const url = require('url')
 const getopt = require('node-getopt')
 const ws = require("nodejs-websocket")
-const { SharedMemory } = require('node-shared-mem');
 
 const options =
 [
