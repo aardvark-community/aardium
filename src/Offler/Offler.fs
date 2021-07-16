@@ -88,7 +88,6 @@ module private ClientHelpers =
         | Input of code : string
         | SetFocus of focus : bool
         | Custom of id : option<string> * js : string
-        | Navigate of url : string
         | OpenDevTools
         | RequestFullFrame
 
@@ -169,10 +168,6 @@ module private ClientHelpers =
                 o.["mapName"] <- JToken.op_Implicit mapName
                 o.["mapSize"] <- JToken.op_Implicit mapSize
 
-            | Navigate url ->
-                o.["command"] <- JToken.op_Implicit "navigate"
-                o.["url"] <- JToken.op_Implicit url
-                
 
             | Resize(width, height) ->
                 o.["command"] <- JToken.op_Implicit "resize"
@@ -418,30 +413,66 @@ type Offler internal(ws : WebSocket, shared : ISharedMemory, incremental : bool,
     [<CLIEvent>]
     member x.Resized = resize.Publish
 
+    member x.NavigateAsync(u : string) =
+        if isDisposed then
+            async { return () }
+        else
+            if url <> u then
+                url <- u
+                let v = System.Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes u)
+                async {
+                    do! Async.SwitchToThreadPool()
+                    let! _ = x.RunJavascript(sprintf "win.loadURL(Buffer.from(\"%s\", 'base64').toString());" v)
+                    return ()
+                }
+            else
+                async { return () }
+
+    member x.Navigate(u : string) =
+        x.NavigateAsync(u) |> Async.Start
+                
+
     member x.Url
-        with get() = url
+        with get() = 
+            if isDisposed then "about:blank"
+            else url
         and set u =
-            
-            url <- u
+            if not isDisposed then
+                if u <> url then
+                    url <- u
+                    x.NavigateAsync(u) |> Async.Start
 
-    member x.CursorName = cursorName
-    member x.Width = width
-    member x.Height = height
+    member x.CursorName = 
+        if isDisposed then "default"
+        else cursorName
+    member x.Width = 
+        if isDisposed then 1 
+        else width
+    member x.Height = 
+        if isDisposed then 1
+        else height
 
-    member x.LastImage = lastImage
+    member x.LastImage = 
+        if isDisposed then PixImage<byte>(Col.Format.RGBA, V2i.II)
+        else lastImage
 
     member x.ReadPixel(pixel : V2i) =
-        let img = lastImage
-        if pixel.AllGreaterOrEqual 0 && pixel.AllSmaller img.Size then
-            img.GetMatrix<C4b>().[pixel]
+        if not isDisposed then
+            let img = lastImage
+            if pixel.AllGreaterOrEqual 0 && pixel.AllSmaller img.Size then
+                img.GetMatrix<C4b>().[pixel]
+            else
+                C4b(0uy, 0uy, 0uy, 0uy)
         else
             C4b(0uy, 0uy, 0uy, 0uy)
 
     member x.Subscribe(obs : IObserver<OfflerImageInfo>) =
-        let s = images.Publish.Subscribe obs //(fun img -> if gotFullFrame then obs.OnNext img)
-        ws.Send (Command.pickle RequestFullFrame) |> Async.RunSynchronously
-
-        s
+        if not isDisposed then
+            let s = images.Publish.Subscribe obs //(fun img -> if gotFullFrame then obs.OnNext img)
+            ws.Send (Command.pickle RequestFullFrame) |> Async.RunSynchronously
+            s
+        else
+            { new System.IDisposable with member x.Dispose() = () }
 
     member x.Subscribe(callback : OfflerImageInfo -> unit) =
         x.Subscribe {
@@ -452,7 +483,7 @@ type Offler internal(ws : WebSocket, shared : ISharedMemory, incremental : bool,
         }
 
     member x.Resize(newWidth : int, newHeight : int) =
-        if newWidth <> width || newHeight <> height then
+        if not isDisposed && (newWidth <> width || newHeight <> height) then
             width <- newWidth
             height <- newHeight
             let cmd = Command.pickle (Resize(newWidth, newHeight))
@@ -519,14 +550,15 @@ type Offler internal(ws : WebSocket, shared : ISharedMemory, incremental : bool,
         if not isDisposed then 
             Input(code) |> Command.pickle |> ws.Send |> Async.RunSynchronously
 
-    member x.SetFocus(focus : bool) =
-        SetFocus focus |> Command.pickle |> ws.Send |> Async.RunSynchronously
+    member _.SetFocus(focus : bool) =
+        if not isDisposed then
+            SetFocus focus |> Command.pickle |> ws.Send |> Async.RunSynchronously
 
-    member x.StartJavascript(js : string) =
+    member _.StartJavascript(js : string) =
         if not isDisposed then 
             Custom(None, js) |> Command.pickle |> ws.Send |> Async.RunSynchronously
         
-    member x.RunJavascript(js : string) =
+    member _.RunJavascript(js : string) =
         if not isDisposed then 
             async {
                 let id = Guid.NewGuid() |> string
