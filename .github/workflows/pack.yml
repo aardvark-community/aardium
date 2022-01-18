@@ -84,22 +84,22 @@ jobs:
       #   uses: actions/download-artifact@v2
       #   with:
       #     name: mac_x64
-      #     path: Aardium\dist
+      #     path: Aardium/dist/Aardium-Darwin-x64.tar.gz
       # - name: Download OSX dependencies (arm64)
       #   uses: actions/download-artifact@v2
       #   with:
       #     name: mac_arm64
-      #     path: Aardium\dist
+      #     path: Aardium/dist/Aardium-Darwin-arm64.tar.gz
       - name: Download Linux dependencies (x64)
         uses: actions/download-artifact@v2
         with:
           name: linux_x64
-          path: Aardium\dist
+          path: Aardium/dist/Aardium-Linux-x64.tar.gz
       - name: Download Windows dependencies (x64)
         uses: actions/download-artifact@v2
         with:
           name: win32_x64
-          path: Aardium\dist
+          path: Aardium\dist\Aardium-win32-x64
       - name: Install Dotnet
         uses: actions/setup-dotnet@v1
         with:
@@ -111,6 +111,12 @@ jobs:
       - name: Build
         shell: cmd
         run: dotnet build -c Release src\Aardium.sln
+      - name: fake mac (x64)
+        shell: cmd
+        run: echo a > Aardium\dist\Aardium-Darwin-x64.tar.gz
+      - name: fake mac (arm64)
+        shell: cmd
+        run: echo a > Aardium\dist\Aardium-Darwin-arm64.tar.gz
       - name: Pack
         run: dotnet fsi build.fsx
       - name: Upload Package
