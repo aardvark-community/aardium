@@ -9,8 +9,8 @@ jobs:
       - name: Add Cert to Keychain
         uses: apple-actions/import-codesign-certs@v1
         with: 
-          p12-file-base64: $
-          p12-password: $
+          p12-file-base64: ${{ secrets.MAC_CERT_BASE64 }}
+          p12-password: ${{ secrets.MAC_CERT_PASSWORD }}
       - name: Build Aardium
         run: ./buildnative.sh
         env:
