@@ -7,7 +7,7 @@ jobs:
     steps:  
       - uses: actions/checkout@v2
       - name: install yarn
-        run: npm install -g yarn && yarn install
+        run: npm install -g yarn && cd Aardium && yarn install
       - name: Build Aardium
         run: ./buildnative.sh x86_64
       - name: Upload Aardium
@@ -21,7 +21,7 @@ jobs:
     steps:  
       - uses: actions/checkout@v2
       - name: install yarn
-        run: npm install -g yarn && yarn install
+        run: npm install -g yarn && cd Aardium && yarn install
       - name: Build Aardium
         run: ./buildnative.sh arm64
       - name: Upload Aardium
@@ -35,7 +35,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: install yarn
-        run: npm install -g yarn && yarn install
+        run: npm install -g yarn && cd Aardium && yarn install
       - name: Build Aardium
         run: ./buildnative.sh
       - name: Upload Aardium
