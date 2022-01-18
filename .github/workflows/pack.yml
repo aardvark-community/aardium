@@ -72,6 +72,11 @@ jobs:
           path: Aardium\dist\Aardium-win32-x64
   final:
     name: Package
+    needs: 
+      - mac_x64
+      - win32_x64
+      - linux_x64
+      - mac_arm64
     runs-on: windows-latest
     steps:  
       - uses: actions/checkout@v2
