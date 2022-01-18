@@ -69,7 +69,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: win32_x64
-          path: Aardium\dist\Aardium-win32-x64
+          path: Aardium/dist/Aardium-win32-x64
   final:
     name: Package
     needs: 
