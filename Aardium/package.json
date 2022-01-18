@@ -11,8 +11,8 @@
   "scripts": {
     "postinstall": "./node_modules/.bin/electron-rebuild node-shared-mem",
     "start": "electron . --debug --hideDock --autoclose",
-    "dist:win32": "electron-packager . Aardium --platform=win32 --arch=x64 --icon ./aardvark.ico --out dist --overwrite",
-    "dist:linux": "electron-packager . Aardium --platform=linux --arch=x64 --icon ./aardvark.png --out dist --overwrite && cd dist/Aardium-linux-x64 && tar -zcvf ../Aardium-Linux-x64.tar.gz .",
+    "dist:win32:x64": "electron-packager . Aardium --platform=win32 --arch=x64 --icon ./aardvark.ico --out dist --overwrite",
+    "dist:linux:x64": "electron-packager . Aardium --platform=linux --arch=x64 --icon ./aardvark.png --out dist --overwrite && cd dist/Aardium-linux-x64 && tar -zcvf ../Aardium-Linux-x64.tar.gz .",
     "dist:darwin:arm64": "electron-builder -m --arm64 && cd dist/mac-arm64 && tar -zcvf ../Aardium-Darwin-arm64.tar.gz .",
     "dist:darwin:x64": "electron-builder -m --x64 && cd dist/mac && tar -zcvf ../Aardium-Darwin-x64.tar.gz ."
   },

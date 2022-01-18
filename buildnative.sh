@@ -21,6 +21,5 @@ then
     fi
 
 else
-    yarn dist:linux
+    yarn dist:linux:x64
 fi
-yarn dist
