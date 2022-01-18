@@ -12,10 +12,10 @@ exports.default = async function(context) {
   const appName = context.packager.appInfo.productFilename;
 
   return await notarize({
-    appBundleId: 'space.pro3d.aardium',
+    appBundleId: 'com.aardvarkians.aardium',
     appPath: `${appOutDir}/${appName}.app`,
-    appleId: process.env.APPLEID,
-    appleIdPassword: process.env.APPLEIDPASS,
+    appleId: "gh@aardworx.at",
+    appleIdPassword: process.env.MAC_DEV_PASSWORD,
   });
 
 

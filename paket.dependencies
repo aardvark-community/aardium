@@ -1,6 +1,6 @@
 framework: netstandard2.0, netcoreapp3.1
 source https://api.nuget.org/v3/index.json
-
+storage: none
 nuget FSharp.Core >= 4.7.0 lowest_matching:true
 nuget Aardvark.Base.Tensors >= 5.1.9 lowest_matching:true
 nuget Newtonsoft.Json >= 12.0.3 lowest_matching:true
@@ -9,4 +9,6 @@ nuget FSys ~> 0.0.1
 group Build
 source https://api.nuget.org/v3/index.json
 framework: netstandard2.0
-github aardvark-platform/aardvark.fake:v5
+nuget FSharp.DependencyManager.Paket ~> 7.0.0-alpha003
+nuget Fake.Core.String ~> 5.21.0-alpha004
+nuget Fake.Core.Target ~> 5.21.0-alpha004
