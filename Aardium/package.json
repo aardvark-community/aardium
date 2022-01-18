@@ -26,12 +26,12 @@
     "nodejs-websocket": "^1.7.2"
   },
   "devDependencies": {
-    "dotenv": "^10.0.0",
-    "electron": "^13.0.1",
+    "dotenv": "^14.2.0",
+    "electron": "^16.0.7",
     "electron-builder": "^22.10.5",
     "electron-notarize": "^1.0.0",
-    "electron-packager": "^14.2.0",
-    "electron-rebuild": "^2.3.5",
+    "electron-packager": "^15.4.0",
+    "electron-rebuild": "^3.2.7",
     "folder-zip-sync": "^1.0.5",
     "run-script-os": "^1.1.1"
   },
