@@ -1,0 +1,40 @@
+name: Publish
+on: [push]
+jobs:
+  mac:
+    name: OSX (x64)
+    runs-on: macos-latest
+    steps:  
+      - uses: actions/checkout@v2
+      - name: Build Aardium
+        run: ./buildnative.sh x86_64
+      - name: Upload Aardium
+        uses: actions/upload-artifact@v2
+        with:
+          name: osx
+          path: Aardium/dist/Aardium-Mac-x64.tar.gz
+  macm1:
+    name: OSX (arm64)
+    runs-on: macos-latest
+    steps:  
+      - uses: actions/checkout@v2
+      - name: Build Aardium
+        run: ./buildnative.sh arm64
+      - name: Upload Aardium
+        uses: actions/upload-artifact@v2
+        with:
+          name: osxm1
+          path: Aardium/dist/Aardium-Mac-arm64.tar.gz
+  linux:
+    name: Linux (x64)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build Aardium
+        run: ./buildnative.sh
+      - name: Upload Aardium
+        uses: actions/upload-artifact@v2
+        with:
+          name: linux
+          path: Aardium/dist/Aardium-Linux-x64.tar.gz
+ 

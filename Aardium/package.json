@@ -13,9 +13,9 @@
     "start": "electron . --debug --hideDock --autoclose",
     "dist:win32": "electron-packager . Aardium --platform=win32 --arch=x64 --icon ./aardvark.ico --out dist --overwrite",
     "dist:linux": "electron-packager . Aardium --platform=linux --arch=x64 --icon ./aardvark.png --out dist --overwrite && cd dist/Aardium-linux-x64 && tar -zcvf ../Aardium-Linux-x64.tar.gz .",
-    "dist:darwin-old": "electron-packager . Aardium --osx-sign.entitlements='entitlements.plist' --osx-sign.hardenedRuntime=true  --platform=darwin --arch=x64 --icon ./aardvark.icns --out dist --overwrite && cd dist/Aardium-darwin-x64 && tar -zcvf ../Aardium-Darwin-x64.tar.gz .",
     "dist": "run-script-os",
-    "dist:darwin": "electron-builder && cd dist/mac && tar -zcvf ../Aardium-Darwin-x64.tar.gz ."
+    "dist:darwin:arm64": "electron-packager . Aardium --platform=darwin --arch=arm64 --icon ./aardvark.icns --out dist --overwrite && cd dist/Aardium-darwin-arm64 && tar -zcvf ../Aardium-Mac-arm64.tar.gz .",
+    "dist:darwin:x64": "electron-packager . Aardium --platform=darwin --arch=x64 --icon ./aardvark.icns --out dist --overwrite && cd dist/Aardium-darwin-x64 && tar -zcvf ../Aardium-Mac-x64.tar.gz ."
   },
   "main": "main.js",
   "repository": "https://github.com/electron/electron-quick-start",
@@ -27,12 +27,12 @@
     "nodejs-websocket": "^1.7.2"
   },
   "devDependencies": {
-    "dotenv": "^10.0.0",
-    "electron": "^13.0.1",
+    "dotenv": "^14.2.0",
+    "electron": "^16.0.7",
     "electron-builder": "^22.10.5",
     "electron-notarize": "^1.0.0",
-    "electron-packager": "^14.2.0",
-    "electron-rebuild": "^2.3.5",
+    "electron-packager": "^15.4.0",
+    "electron-rebuild": "^3.2.7",
     "folder-zip-sync": "^1.0.5",
     "run-script-os": "^1.1.1"
   },
