@@ -1,5 +1,3 @@
-@echo off
-
 
 pushd Aardium
 npm install -g yarn
