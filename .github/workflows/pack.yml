@@ -57,3 +57,59 @@ jobs:
         with:
           name: linux_x64
           path: Aardium/dist/Aardium-Linux-x64.tar.gz
+  win32_x64:
+    name: Windows (x64)
+    runs-on: windows-latest
+    steps:  
+      - uses: actions/checkout@v2
+      - name: Build Aardium
+        shell: cmd
+        run: buildnative.cmd
+      - name: Upload Aardium
+        uses: actions/upload-artifact@v2
+        with:
+          name: win32_x64
+          path: Aardium\dist\Aardium-win32-x64
+  final:
+    name: Package
+    runs-on: windows-latest
+    steps:  
+      - uses: actions/checkout@v2
+      - name: Download OSX dependencies (x64)
+        uses: actions/download-artifact@v2
+        with:
+          name: mac_x64
+          path: Aardium\dist
+      - name: Download OSX dependencies (arm64)
+        uses: actions/download-artifact@v2
+        with:
+          name: mac_arm64
+          path: Aardium\dist
+      - name: Download Linux dependencies (x64)
+        uses: actions/download-artifact@v2
+        with:
+          name: linux_x64
+          path: Aardium\dist
+      - name: Download Windows dependencies (x64)
+        uses: actions/download-artifact@v2
+        with:
+          name: win32_x64
+          path: Aardium\dist
+      - name: Install Dotnet
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '6.0.100'
+      - name: Restore Tools
+        run: dotnet tool restore
+      - name: Restore
+        run: dotnet paket restore
+      - name: Build
+        shell: cmd
+        run: dotnet build -c Release src\Aardium.sln
+      - name: Pack
+        run: dotnet fsi build.fsx
+      - name: Upload Package
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: bin\pack
