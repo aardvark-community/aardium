@@ -36,7 +36,7 @@
     "run-script-os": "^1.1.1"
   },
   "build": {
-    "appId": "space.pro3d.aardium",
+    "appId": "com.aardvarkians.aardium",
     "mac": {
       "category": "your.app.category.type",
       "hardenedRuntime": true,
