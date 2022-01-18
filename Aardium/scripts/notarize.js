@@ -8,7 +8,7 @@ exports.default = async function(context) {
   if (electronPlatformName !== 'darwin') {
     return;
   }
-
+ 
   const appName = context.packager.appInfo.productFilename;
 
   return await notarize({
