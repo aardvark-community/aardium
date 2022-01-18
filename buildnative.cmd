@@ -1,8 +1,6 @@
 
 echo a
 pushd Aardium
-echo b
-npm install -g yarn
 echo c
 yarn install
 echo d
