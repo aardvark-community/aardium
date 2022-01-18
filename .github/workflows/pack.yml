@@ -62,9 +62,12 @@ jobs:
     runs-on: windows-latest
     steps:  
       - uses: actions/checkout@v2
-      - name: Build Aardium
-        shell: cmd
-        run: .\buildnative.cmd
+      - name: Yarn Install
+        working-directory: Aardium
+        run: yarn install
+      - name: Yarn Install
+        working-directory: Aardium
+        run: yarn dist:win32:x64
       - name: Upload Aardium
         uses: actions/upload-artifact@v2
         with:
