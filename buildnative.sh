@@ -7,8 +7,6 @@ then
     arch=$(uname -m)
 fi
 
-cd Aardium
-
 if [ $os == "Darwin" ];
 then
     if [ $arch == "x86_64" ];
