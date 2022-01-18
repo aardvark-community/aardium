@@ -17,6 +17,7 @@ jobs:
           MAC_CERT_BASE64: ${{ secrets.MAC_CERT_BASE64 }}
           MAC_CERT_PASSWORD: ${{ secrets.MAC_CERT_PASSWORD }}
           MAC_DEV_PASSWORD: ${{ secrets.MAC_DEV_PASSWORD }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload Aardium
         uses: actions/upload-artifact@v2
         with:
