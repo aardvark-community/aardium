@@ -40,7 +40,8 @@ let notes = ReleaseNotes.load "RELEASE_NOTES.md"
 
 File.WriteAllText(Path.Combine("bin, version.txt"), notes.NugetVersion)
 
-Trace.traceStartTargetUnsafe "Packing"
+
+Trace.trace "PACKING"
 
 exec "dotnet" [
     "paket"
@@ -50,5 +51,4 @@ exec "dotnet" [
     "bin/pack"
 ]
 
-Trace.traceEndTargetUnsafe "Packing"
 

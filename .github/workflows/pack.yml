@@ -1,5 +1,10 @@
 name: Publish
-on: [push]
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - RELEASE_NOTES.md
 jobs:
   mac_arm64:
     name: OSX (arm64)
@@ -132,7 +137,7 @@ jobs:
         shell: cmd
         run: dotnet build -c Release src\Aardium.sln
       - name: Pack
-        run: dotnet fsi build.fsx
+        run: dotnet fsi pack.fsx
       - name: Upload Package
         uses: actions/upload-artifact@v2
         with:
