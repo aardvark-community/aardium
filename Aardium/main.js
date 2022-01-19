@@ -86,7 +86,7 @@ function createWindow () {
         experimentalFeatures: opt.experimental,
         webSecurity: true, 
         devTools: true,
-        preload: path.join(__dirname, 'preload.js')
+        preload: path.join(__dirname, 'src/preload.js')
       }
     };
 

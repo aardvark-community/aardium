@@ -1,3 +1,6 @@
+## 2.0.10-prerelease0005
+* fixed preload problem
+
 ### 2.0.10-prerelease0004
 * switched to private signing 
 
