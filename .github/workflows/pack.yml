@@ -44,7 +44,7 @@ jobs:
         run: yarn install
       - name: Package
         working-directory: Aardium
-        run: yarn dist:darwin:arm64
+        run: yarn dist:darwin:x64
         env:
           MAC_CERT_BASE64: ${{ secrets.MAC_CERT_BASE64 }}
           MAC_CERT_PASSWORD: ${{ secrets.MAC_CERT_PASSWORD }}
