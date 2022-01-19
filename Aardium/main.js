@@ -1,3 +1,6 @@
+require('@electron/remote/main').initialize()
+console.error(process.argv);
+
 const electron = require('electron')
 const os = require('os')
 // Module to control application life.
@@ -8,8 +11,6 @@ const electronLocalshortcut = require('electron-localshortcut');
 
 
 //app.allowRendererProcessReuse = false;
-
-
 
 const path = require('path')
 const url = require('url')
@@ -78,13 +79,13 @@ function createWindow () {
       fullscreenable: true,
       frame: !opt.frameless,
       webPreferences: { 
-        nodeIntegration: false, 
+        nodeIntegration: true, 
         contextIsolation: false,
-        nativeWindowOpen: true,
+        nativeWindowOpen: true,    
         enableRemoteModule: true,
         experimentalFeatures: opt.experimental,
-          webSecurity: true, 
-          devTools: true,
+        webSecurity: true, 
+        devTools: true,
         preload: path.join(__dirname, 'preload.js')
       }
     };
@@ -94,6 +95,7 @@ function createWindow () {
 
   // Create the browser window.
   mainWindow = new BrowserWindow(windowOptions);
+  require("@electron/remote/main").enable(mainWindow.webContents);
 
   electron.app.on('browser-window-created',function(e,window) {
       window.setMenu(null);

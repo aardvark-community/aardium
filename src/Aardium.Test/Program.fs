@@ -73,7 +73,7 @@ let main argv =
 
         0 
     else 
-        Aardium.init()
+        Aardium.initPath "/Users/schorsch/Development/aardium/Aardium/dist/Aardium-darwin-arm64"
         Aardium.run { 
             experimental true
             //size {| P_X = 800; P_Y = 600 |}
@@ -81,7 +81,7 @@ let main argv =
             //windowoptions {| titleBarStyle = "customButtonsOnHover"; frame= false |}
             title "test"
             autoclose true // close when mainwindow closes
-            hideDock true // hide dock on mac
+            hideDock false // hide dock on mac
         }
 
         0 

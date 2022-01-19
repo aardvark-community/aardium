@@ -10,8 +10,9 @@
   },
   "scripts": {
     "postinstall": "./node_modules/.bin/electron-rebuild node-shared-mem",
-    "start": "electron . --debug --hideDock --autoclose",
+    "start": "electron . --debug --hideDock --autoclose ",
     "dist:win32:x64": "electron-packager . Aardium --platform=win32 --arch=x64 --icon ./aardvark.ico --out dist --overwrite",
+    "dist:darwin:local": "electron-packager . Aardium --platform=darwin --icon ./aardvark.icns --out dist --overwrite",
     "dist:linux:x64": "electron-packager . Aardium --platform=linux --arch=x64 --icon ./aardvark.png --out dist --overwrite && cd dist/Aardium-linux-x64 && tar -zcvf ../Aardium-Linux-x64.tar.gz .",
     "dist:darwin:arm64": "electron-builder -m --arm64 && cd dist/mac-arm64 && tar -zcvf ../Aardium-Darwin-arm64.tar.gz .",
     "dist:darwin:x64": "electron-builder -m --x64 && cd dist/mac && tar -zcvf ../Aardium-Darwin-x64.tar.gz ."
@@ -23,7 +24,8 @@
     "jquery": "^3.5.1",
     "node-getopt": "^0.3.2",
     "node-shared-mem": "^1.0.9",
-    "nodejs-websocket": "^1.7.2"
+    "nodejs-websocket": "^1.7.2",
+    "@electron/remote": "^2.0.1"
   },
   "devDependencies": {
     "dotenv": "^14.2.0",

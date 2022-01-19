@@ -1,20 +1,21 @@
-const {dialog, Menu} = require('electron').remote
 const electron = require('electron')
+const remote = require('@electron/remote')
 const shm = require('node-shared-mem')
 
+electron.remote = remote;
 var aardvark = {};
 document.aardvark = aardvark;
 window.aardvark = aardvark;
 
 aardvark.openFileDialog = function(config, callback) {
 	if(!callback) callback = config;
-	dialog.showOpenDialog({properties: ['openFile', 'multiSelections']}).then(e => callback(e.filePaths));
+	electron.remote.dialog.showOpenDialog({properties: ['openFile', 'multiSelections']}).then(e => callback(e.filePaths));
 };
 
 
 aardvark.setMenu = function(template) {
-	const menu = Menu.buildFromTemplate(template)
-	Menu.setApplicationMenu(menu)
+	const menu = rem.Menu.buildFromTemplate(template)
+	electron.remote.Menu.setApplicationMenu(menu)
 };
 
 aardvark.openMapping = function (name, len) {
@@ -60,7 +61,7 @@ aardvark.openMapping = function (name, len) {
 };
 
 
-aardvark.dialog = dialog;
+aardvark.dialog = remote.dialog;
 aardvark.electron = electron;
 
 aardvark.captureFullscreen = function(path) 
