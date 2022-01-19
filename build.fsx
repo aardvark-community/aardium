@@ -1,6 +1,7 @@
 #r "nuget: Fake.Core.ReleaseNotes,[5.21.0-alpha004]"
 #r "nuget: Fake.Core.Process,[5.21.0-alpha004]"
 open System
+open System.IO
 open System.Diagnostics
 open Fake.Core
 
@@ -32,15 +33,22 @@ let exec (name : string) (args : list<string>) =
 
 
 
-Trace.traceStartTargetUnsafe "Packing"
-
 do Environment.CurrentDirectory <- __SOURCE_DIRECTORY__
 
 let notes = ReleaseNotes.load "RELEASE_NOTES.md"
+
+
+File.WriteAllText(Path.Combine("bin, version.txt"), notes.NugetVersion)
+
+Trace.traceStartTargetUnsafe "Packing"
 
 exec "dotnet" [
     "paket"
     "pack"
     "--version"; notes.NugetVersion
+    "--release-notes"; String.concat "\r\n" notes.Notes
     "bin/pack"
 ]
+
+Trace.traceEndTargetUnsafe "Packing"
+

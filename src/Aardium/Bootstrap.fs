@@ -268,10 +268,19 @@ module Aardium =
     let feed = "https://www.nuget.org/api/v2/package"
     let packageBaseName = "Aardium"
     let version = 
-        if RuntimeInformation.IsOSPlatform(OSPlatform.Windows) then "2.0.5"
-        elif RuntimeInformation.IsOSPlatform(OSPlatform.Linux) then "2.0.5"
-        elif RuntimeInformation.IsOSPlatform(OSPlatform.OSX) then "2.0.7"
-        else failwith "unsupported platform"
+        let infoVersion = 
+            typeof<AardiumOffscreenServer>.Assembly.GetCustomAttributes(true)
+            |> Array.tryPick (function
+                | :? System.Reflection.AssemblyInformationalVersionAttribute as att -> Some att.InformationalVersion
+                | _ -> None
+            )
+        match infoVersion with
+        | Some v -> v
+        | None ->
+            if RuntimeInformation.IsOSPlatform(OSPlatform.Windows) then "2.0.5"
+            elif RuntimeInformation.IsOSPlatform(OSPlatform.Linux) then "2.0.5"
+            elif RuntimeInformation.IsOSPlatform(OSPlatform.OSX) then "2.0.7"
+            else failwith "unsupported platform"
     
     [<Literal>]
     let private Win = "Win32"
@@ -287,10 +296,12 @@ module Aardium =
         else failwith "unsupported platform"
 
     let private arch =
-        match sizeof<nativeint> with
-            | 4 -> "x86"
-            | 8 -> "x64"
-            | v -> failwithf "bad bitness: %A" v
+        match RuntimeInformation.ProcessArchitecture with
+        | Architecture.X64 -> "x64"
+        | Architecture.X86 -> "x86"
+        | Architecture.Arm -> "arm"
+        | Architecture.Arm64 -> "arm64"
+        | _ -> failwith "unsupported architecture"
 
     let private packageName = sprintf "%s-%s-%s" packageBaseName platform arch
 

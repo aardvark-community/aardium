@@ -23,6 +23,7 @@ NUGET
       SixLabors.ImageSharp (>= 1.0.2 < 1.1)
     Aardvark.Base.TypeProviders (4.5.15)
       FSharp.Core (>= 4.2.3)
+    Aardvark.Build (1.0.0-prerelease0011)
     DevILSharp (0.2.11)
       FSharp.Core (>= 4.6.2)
     FSharp.Core (4.7)

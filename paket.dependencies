@@ -5,6 +5,7 @@ nuget FSharp.Core >= 4.7.0 lowest_matching:true
 nuget Aardvark.Base.Tensors >= 5.1.9 lowest_matching:true
 nuget Newtonsoft.Json >= 12.0.3 lowest_matching:true
 nuget FSys ~> 0.0.1
+nuget Aardvark.Build ~> 1.0.0-prerelease0011
 
 group Build
 source https://api.nuget.org/v3/index.json

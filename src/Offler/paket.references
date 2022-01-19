@@ -2,3 +2,4 @@ FSharp.Core
 Aardvark.Base.Tensors
 Newtonsoft.Json
 FSys
+Aardvark.Build
