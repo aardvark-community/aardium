@@ -1,3 +1,6 @@
+### 2.0.10-prerelease0003
+* updated node-shared-mem
+
 ### 2.0.10-prerelease0002
 * fixed preload.js
 
