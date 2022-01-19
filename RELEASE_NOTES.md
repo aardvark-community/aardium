@@ -1,3 +1,6 @@
+### 2.0.10-prerelease0004
+* switched to private signing
+
 ### 2.0.10-prerelease0003
 * updated node-shared-mem
 

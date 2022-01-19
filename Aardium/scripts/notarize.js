@@ -16,7 +16,7 @@ exports.default = async function(context) {
     appPath: `${appOutDir}/${appName}.app`,
     appleId: "gh@aardworx.at",
     appleIdPassword: process.env.MAC_DEV_PASSWORD,
-    ascProvider: "YW59ZAR4NW"
+    ascProvider: "4LQPQ4H9LQ"
   });
 
 
