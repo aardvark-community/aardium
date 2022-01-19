@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - master
+      - notarize
     paths:
       - RELEASE_NOTES.md
 jobs:
