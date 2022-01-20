@@ -1,4 +1,7 @@
-## 2.0.10-prerelease0005
+### 2.0.10-prerelease0006
+* another attempt at fixing preload problem
+
+### 2.0.10-prerelease0005
 * fixed preload problem
 
 ### 2.0.10-prerelease0004

@@ -46,6 +46,7 @@
       "entitlementsInherit": "build/entitlements.mac.plist",
       "gatekeeperAssess": false
     },
+    "buildDependenciesFromSource": true,
     "afterSign": "scripts/notarize.js"
   }
 }
