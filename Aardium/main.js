@@ -79,12 +79,12 @@ function createWindow () {
       fullscreenable: true,
       frame: !opt.frameless,
       webPreferences: { 
-        nodeIntegration: true, 
+        nodeIntegration: false, 
         contextIsolation: false,
         nativeWindowOpen: true,    
         enableRemoteModule: true,
         experimentalFeatures: opt.experimental,
-        webSecurity: true, 
+        webSecurity: false, 
         devTools: true,
         preload: path.join(__dirname, 'src/preload.js')
       }

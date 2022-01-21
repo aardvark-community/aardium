@@ -1,3 +1,6 @@
+### 2.0.10-prerelease0007
+* disabled nodeIntegration
+
 ### 2.0.10-prerelease0006
 * another attempt at fixing preload problem
 
