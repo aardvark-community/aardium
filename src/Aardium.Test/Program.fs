@@ -11,6 +11,8 @@ open Aardvark.Base
 [<EntryPoint>]
 let main argv =
     Aardvark.Init()
+
+    RenderingTest.run()
     
     if false then
         // local aardium

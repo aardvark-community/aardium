@@ -1,0 +1,24 @@
+<div id="a" style="width: 100px; height: 100px; position: absolute; background: red">
+
+</div>
+
+<script>
+let a = document.getElementById("a");
+
+let down = null;
+a.addEventListener("pointerdown", (e) => {
+   down = e;
+   a.setPointerCapture(e.pointerId);
+   a.innerHTML = e.pageX + ", " + e.pageY;
+});
+a.addEventListener("pointerup", (e) => {
+   down = null;
+   a.releasePointerCapture(e.pointerId);
+});
+a.addEventListener("pointermove", (e) => {
+   if(down) {
+	a.innerHTML = e.screenX + ", " + e.screenY;
+   
+   }
+});
+</script>

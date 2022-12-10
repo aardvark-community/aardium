@@ -9,8 +9,9 @@
     "url": "http://aardvarkians.com"
   },
   "scripts": {
-    "postinstall": "./node_modules/.bin/electron-rebuild node-shared-mem",
-    "start": "electron . --debug --hideDock --autoclose ",
+    "postinstall:win32": "./node_modules/.bin/electron-rebuild.cmd node-shared-mem",
+	"postinstall:darwin": "./node_modules/.bin/electron-rebuild.sh node-shared-mem",
+    "start": "electron . --hideDock --autoclose --menu",
     "dist:win32:x64": "electron-packager . Aardium --platform=win32 --arch=x64 --icon ./aardvark.ico --out dist --overwrite",
     "dist:darwin:local": "electron-packager . Aardium --platform=darwin --icon ./aardvark.icns --out dist --overwrite",
     "dist:linux:x64": "electron-packager . Aardium --platform=linux --arch=x64 --icon ./aardvark.png --out dist --overwrite && cd dist/Aardium-linux-x64 && tar -zcvf ../Aardium-Linux-x64.tar.gz .",
@@ -20,22 +21,22 @@
   "main": "main.js",
   "repository": "https://github.com/electron/electron-quick-start",
   "dependencies": {
+    "@electron/remote": "^2.0.9",
     "electron-localshortcut": "^3.2.1",
-    "jquery": "^3.5.1",
+    "jquery": "^3.6.1",
     "node-getopt": "^0.3.2",
-    "node-shared-mem": "^1.0.11",
-    "nodejs-websocket": "^1.7.2",
-    "@electron/remote": "^2.0.1"
+    "node-shared-mem": "^1.0.12",
+    "nodejs-websocket": "^1.7.2"
   },
   "devDependencies": {
-    "dotenv": "^14.2.0",
-    "electron": "^16.0.7",
-    "electron-builder": "^22.10.5",
+    "@electron/rebuild": "^3.2.10",
+    "dotenv": "^16.0.3",
+    "electron": "^22.0.0",
+    "electron-builder": "^23.6.0",
     "electron-notarize": "^1.0.0",
-    "electron-packager": "^15.4.0",
-    "electron-rebuild": "^3.2.7",
+    "electron-packager": "^17.1.1",
     "folder-zip-sync": "^1.0.5",
-    "run-script-os": "^1.1.1"
+    "run-script-os": "^1.1.6"
   },
   "build": {
     "appId": "com.aardvarkians.aardium",
