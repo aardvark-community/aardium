@@ -25,7 +25,7 @@ let main argv =
     Aardium.initPath exe
     //Aardium.init()
 
-    let offler = false
+    let offler = true
 
     if offler then
         Offler.Logger <- fun _ msg ->
@@ -39,10 +39,19 @@ let main argv =
                 incremental = true
             }
 
+        let outputPath =
+            Path.combine [
+                Environment.GetFolderPath(System.Environment.SpecialFolder.Desktop)
+                "offler"
+            ]
+
+        if not <| Directory.Exists outputPath then
+            Directory.CreateDirectory outputPath |> ignore
+
         let mutable index = 0
         offler.Add(fun info ->
             printfn "image %03d" index
-            offler.LastImage.Save (sprintf @"C:\Users\Schorsch\Desktop\offler\%03d.png" index)
+            offler.LastImage.Save (Path.Combine(outputPath, $"%03d{index}.png"))
             index <- index + 1
         )
 

@@ -919,10 +919,10 @@ electron-publish@24.8.1:
     lazy-val "^1.0.5"
     mime "^2.5.2"
 
-electron@^20.0.0, "electron@>= 10.0.0-beta.1":
-  version "20.3.12"
-  resolved "https://registry.npmjs.org/electron/-/electron-20.3.12.tgz"
-  integrity sha512-CuCZKhwdSXaUNIoEuPVZ25YH18zmox3wEM8Acwcy9tlpD8Jiuq3ji3RZ98eVWJalrpqbdE9LtTD/sLC86GIkLg==
+"electron@>= 10.0.0-beta.1", electron@20.3.8:
+  version "20.3.8"
+  resolved "https://registry.npmjs.org/electron/-/electron-20.3.8.tgz"
+  integrity sha512-P93ZWoJjXEVwsjUJ4q6640KZ4+rmWMZ9O5IB1eq/L9S52ZYsXo0o82afpPXq3j8vpneY0N5J62hgRzC1ZKzYmw==
   dependencies:
     "@electron/get" "^1.14.1"
     "@types/node" "^16.11.26"

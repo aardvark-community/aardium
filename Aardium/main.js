@@ -162,6 +162,7 @@ function createWindow () {
 function runOffscreenServer(port) {
     // process gets killed otherwise
     const dummyWin = new BrowserWindow({ show: false, webPreferences: { offscreen: true, contextIsolation: false } })
+    const { SharedMemory } = require('node-shared-mem');
 
     const server =
         ws.createServer(function (conn) {
