@@ -7,6 +7,12 @@
         "commands": [
           "paket"
         ]
-      }
+      },
+      "aardpack": {
+        "version": "1.0.21",
+        "commands": [
+          "aardpack"
+        ]
+    }
     }
   }
