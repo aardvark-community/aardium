@@ -21,7 +21,7 @@ type Progress(received : int64, total : int64) =
         sprintf "%.2f%%" (100.0 * float received / float total)
 
 module Tools =
-    
+
     type private Message =
         | Log of string
         | Error of string
@@ -30,7 +30,7 @@ module Tools =
         try
             if Directory.Exists folder then Directory.Delete(folder, true)
             ZipFile.ExtractToDirectory(file, folder)
-            
+
         with _ ->
             if Directory.Exists folder then Directory.Delete(folder, true)
             reraise()
@@ -40,11 +40,11 @@ module Tools =
             use c = new HttpClient()
 
             let response = c.GetAsync(System.Uri url, HttpCompletionOption.ResponseHeadersRead).Result
-            let len = 
+            let len =
                 let f = response.Content.Headers.ContentLength
                 if f.HasValue then f.Value
                 else 1L <<< 30
-                
+
             let mutable lastProgress = Progress(0L,len)
             progress lastProgress
             let sw = System.Diagnostics.Stopwatch.StartNew()
@@ -56,14 +56,14 @@ module Tools =
 
 
             let buffer : byte[] = Array.zeroCreate (4 <<< 20)
-            
+
             let mutable remaining = len
             let mutable read = 0L
             while remaining > 0L do
                 let cnt = int (min remaining buffer.LongLength)
                 let r = stream.Read(buffer, 0, cnt)
                 output.Write(buffer, 0, r)
-            
+
                 remaining <- remaining - int64 r
                 read <- read + int64 r
 
@@ -73,114 +73,88 @@ module Tools =
                     progress p
                     lastProgress <- p
                     sw.Restart()
-                    
+
         with _ ->
             if File.Exists file then File.Delete file
             reraise()
-          
+
     let startThread (f : unit -> unit) =
         let t = new Thread(ThreadStart(f), IsBackground = true)
         t.Start()
 
     let start (file : string) (logger : bool -> string -> unit) (args : string[]) =
-        let info = 
+        let info =
             ProcessStartInfo(
-                file, 
+                file,
                 Arguments = String.concat " " args,
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true
             )
-            
-        info.EnvironmentVariables.["ELECTRON_ENABLE_LOGGING"] <- "1"
-        info.Environment.["ELECTRON_ENABLE_LOGGING"] <- "1"
 
-        let proc = Process.Start(info)
-        FSys.Process.attachChild proc 
-
-        proc.OutputDataReceived.Add (fun e ->
-            if not (String.IsNullOrWhiteSpace e.Data) then
-                logger false e.Data
-        )
-        
-        proc.ErrorDataReceived.Add (fun e ->
-            if not (String.IsNullOrWhiteSpace e.Data) then
-                logger true e.Data
-        )
-        
-        proc.BeginOutputReadLine()
-        proc.BeginErrorReadLine()
-        
-        proc
-
-    let exec (file : string) (logger : bool -> string -> unit) (args : string[]) =
-        //printfn "exec: %s %A" file args
-        let info = 
-            ProcessStartInfo(
-                file, 
-                Arguments = String.concat " " args,
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true
-            )
-            
         info.EnvironmentVariables.["ELECTRON_ENABLE_LOGGING"] <- "1"
         info.Environment.["ELECTRON_ENABLE_LOGGING"] <- "1"
 
         let proc = Process.Start(info)
         FSys.Process.attachChild proc
 
-        use log = new System.Collections.Concurrent.BlockingCollection<Message>()
-
         proc.OutputDataReceived.Add (fun e ->
             if not (String.IsNullOrWhiteSpace e.Data) then
-                log.Add (Log e.Data)
+                logger false e.Data
         )
-        
+
         proc.ErrorDataReceived.Add (fun e ->
             if not (String.IsNullOrWhiteSpace e.Data) then
-                log.Add (Error e.Data)
+                logger true e.Data
         )
-        
+
         proc.BeginOutputReadLine()
         proc.BeginErrorReadLine()
-        
+
+        proc
+
+    let exec (file : string) (logger : bool -> string -> unit) (args : string[]) =
+        use log = new System.Collections.Concurrent.BlockingCollection<string * bool>()
+
+        let proc =
+            args |> start file (fun error str ->
+                log.Add((str, error))
+            )
+
         let cancel = new CancellationTokenSource()
 
         startThread (fun () ->
             proc.WaitForExit()
             cancel.Cancel()
         )
-        
+
         try
             while true do
-                let msg = log.Take(cancel.Token)
-                match msg with
-                    | Log msg -> logger false msg
-                    | Error msg -> logger true msg
+                let (str, error) = log.Take(cancel.Token)
+                logger error str
+
         with :? OperationCanceledException ->
             ()
 
-
 type AardiumConfig =
     {
-        width       : Option<int>
-        height      : Option<int>
-        url         : Option<string>
-        debug       : bool
-        icon        : Option<string>
-        title       : Option<string>
-        menu        : bool
-        fullscreen  : bool
-        hideDock    : bool
-        autoclose   : bool
-        experimental: bool
-        woptions    : Option<string>
-        log         : bool -> string -> unit
+        width        : Option<int>
+        height       : Option<int>
+        url          : Option<string>
+        debug        : bool
+        icon         : Option<string>
+        title        : Option<string>
+        menu         : bool
+        fullscreen   : bool
+        hideDock     : bool
+        autoclose    : bool
+        experimental : bool
+        woptions     : Option<string>
+        log          : bool -> string -> unit
     }
 
 module AardiumConfig =
-    let empty = 
+    let empty =
         {
             width = None
             height = None
@@ -199,7 +173,6 @@ module AardiumConfig =
 
     let internal toArgs (cfg : AardiumConfig) =
         [|
-        
             match cfg.debug with
             | true -> yield "--dev"
             | false -> ()
@@ -228,32 +201,29 @@ module AardiumConfig =
             | Some url -> yield! [| "--url=\"" + url + "\"" |]
             | None -> ()
 
-            
-            match cfg.title with    
+            match cfg.title with
             | Some t -> yield! [| "--title=\"" + t + "\"" |]
             | None -> ()
-                
-            match cfg.icon with    
+
+            match cfg.icon with
             | Some i -> yield! [| "--icon=\"" + i + "\"" |]
             | None -> ()
 
-            match cfg.hideDock with    
+            match cfg.hideDock with
             | true -> yield! [| "--hideDock"|]
             | false -> ()
 
-            match cfg.autoclose with    
+            match cfg.autoclose with
             | true -> yield! [| "--autoclose"|]
             | false -> ()
 
             match cfg.woptions with
             | Some w -> yield "--woptions=\""  + w.Replace("\"", "\\\"") + "\""
             | None -> ()
-                
-
         |]
 
 type AardiumOffscreenServer internal (proc : Process, port : int) =
-    
+
     member x.IsRunning = not proc.HasExited
     member x.Port = port
     member x.Stop() = if not proc.HasExited then proc.Kill()
@@ -279,7 +249,7 @@ module Aardium =
         |> Option.defaultWith (fun _ ->
             string <| asm.GetName().Version
         )
-    
+
     [<Literal>]
     let private Win = "Win32"
     [<Literal>]
@@ -320,7 +290,7 @@ module Aardium =
         open System.Runtime.InteropServices
         [<DllImport("libc")>]
         extern int chmod(string path, int mode)
-        
+
     let initPath (pp : string) =
         if executablePath = "" then
             let path = Path.GetFullPath pp
@@ -352,11 +322,11 @@ module Aardium =
 
                     match platform with
                         (*| Darwin ->
-                            
+
                             let zip = Path.Combine(aardiumPath, "tools", "Aardium-1.0.0-mac.zip")
                             let mutable retryCount = 0
                             Console.WriteLine(sprintf "looking for; %s" zip)
-                            printfn "exists: %A" (File.Exists zip) 
+                            printfn "exists: %A" (File.Exists zip)
                             let outDir = Path.Combine(aardiumPath, "tools")
                             Console.WriteLine(sprintf "unzipping using tar %s to %s" zip outDir)
                             //ZipFile.ExtractToDirectory(zip, outDir)
@@ -373,7 +343,7 @@ module Aardium =
                             info.RedirectStandardOutput <- true
                             let proc = System.Diagnostics.Process.Start(info)
                             proc.WaitForExit()
-                            if proc.ExitCode <> 0 then 
+                            if proc.ExitCode <> 0 then
                                 proc.StandardError.ReadToEnd() |> printfn "ERROR: %s"
                             Console.WriteLine("untared")
 
@@ -391,7 +361,7 @@ module Aardium =
                             info.RedirectStandardOutput <- true
                             let proc = System.Diagnostics.Process.Start(info)
                             proc.WaitForExit()
-                            if proc.ExitCode <> 0 then 
+                            if proc.ExitCode <> 0 then
                                 proc.StandardError.ReadToEnd() |> printfn "ERROR: %s"
                             Console.WriteLine("untared")
                         | _ -> ()
@@ -411,7 +381,7 @@ module Aardium =
 
     let runConfig (cfg : AardiumConfig)  =
         if File.Exists executablePath then
-            Tools.exec executablePath cfg.log (AardiumConfig.toArgs cfg) 
+            Tools.exec executablePath cfg.log (AardiumConfig.toArgs cfg)
         else
             failwithf "could not locate aardium"
 
@@ -422,7 +392,7 @@ module Aardium =
         member x.WindowOptions(cfg : AardiumConfig, value : 'a) =
             if FSharpType.IsRecord(typeof<'a>, true) then
                 let rec toJSON(t : Type) (value : obj) =
-                    if t = typeof<string> then 
+                    if t = typeof<string> then
                         sprintf "\"%s\"" (unbox<string> value)
                     elif t = typeof<bool> then
                         if unbox value then "true" else "false"
@@ -430,7 +400,7 @@ module Aardium =
                         string value
                     elif FSharpType.IsRecord(t, true) then
                         FSharpType.GetRecordFields(typeof<'a>, true)
-                        |> Array.map (fun f -> 
+                        |> Array.map (fun f ->
                             let value = toJSON f.PropertyType (f.GetValue value)
                             sprintf "\"%s\": %s" f.Name value
                         )
@@ -446,7 +416,7 @@ module Aardium =
                             while e.MoveNext() do
                                 all.Add e.Current
                             all |> Seq.map (toJSON t) |> String.concat ", " |> sprintf "[%s]"
-                        
+
                 let json = toJSON typeof<'a> value
                 { cfg with woptions = Some json }
             else
@@ -455,11 +425,11 @@ module Aardium =
         [<CustomOperation("url")>]
         member x.Url(cfg : AardiumConfig, url : string) =
             { cfg with url = Some url }
-            
+
         [<CustomOperation("icon")>]
         member x.Icon(cfg : AardiumConfig, file : string) =
             { cfg with icon = Some file }
-            
+
         [<CustomOperation("title")>]
         member x.Title(cfg : AardiumConfig, title : string) =
             { cfg with title = Some title }
@@ -467,17 +437,17 @@ module Aardium =
         [<CustomOperation("width")>]
         member x.Width(cfg : AardiumConfig, w : int) =
             { cfg with width = Some w }
-            
+
         [<CustomOperation("height")>]
         member x.Height(cfg : AardiumConfig, h : int) =
             { cfg with height = Some h }
-            
+
         [<CustomOperation("size")>]
         member inline x.Size(cfg : AardiumConfig, v : ^a) =
             let w = (^a: (member P_X : int)(v))
             let h = (^a: (member P_Y : int)(v))
             { cfg with width = Some w; height = Some h }
-            
+
         [<CustomOperation("debug")>]
         member x.Debug(cfg : AardiumConfig, v : bool) =
             { cfg with debug = v }
@@ -493,11 +463,11 @@ module Aardium =
         [<CustomOperation("autoclose")>]
         member x.AutoClose(cfg : AardiumConfig, v : bool) =
             { cfg with autoclose = v }
-            
+
         [<CustomOperation("menu")>]
         member x.Menu(cfg : AardiumConfig, v : bool) =
             { cfg with menu = v }
-            
+
         [<CustomOperation("experimental")>]
         member x.Experimental(cfg : AardiumConfig, v : bool) =
             { cfg with experimental = v }
@@ -518,7 +488,7 @@ module Aardium =
     let run = AardiumBuilder()
 
     let startOffscreenServer (port : int) (logger : bool -> string -> unit) =
-        let port = 
+        let port =
             if port <> 0 then
                 port
             else
