@@ -78,7 +78,8 @@ function createWindow () {
       fullscreen: opt.fullscreen,
       fullscreenable: true,
       frame: !opt.frameless,
-      webPreferences: { 
+      webPreferences: {
+        sandbox: false,
         nodeIntegration: false, 
         contextIsolation: false,
         nativeWindowOpen: true,    

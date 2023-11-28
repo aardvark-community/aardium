@@ -9,7 +9,9 @@
     "url": "http://aardvarkians.com"
   },
   "scripts": {
-    "postinstall": "./node_modules/.bin/electron-rebuild node-shared-mem",
+    "postinstall:win32": "./node_modules/.bin/electron-rebuild.cmd node-shared-mem",
+    "postinstall:darwin": "./node_modules/.bin/electron-rebuild.sh node-shared-mem",
+    "postinstall:linux": "./node_modules/.bin/electron-rebuild.sh node-shared-mem",
     "start": "electron . --debug --hideDock --autoclose ",
     "dist:win32:x64": "electron-packager . Aardium --platform=win32 --arch=x64 --icon ./aardvark.ico --out dist --overwrite",
     "dist:darwin:local": "electron-packager . Aardium --platform=darwin --icon ./aardvark.icns --out dist --overwrite",
@@ -29,11 +31,11 @@
   },
   "devDependencies": {
     "dotenv": "^14.2.0",
-    "electron": "^16.0.7",
-    "electron-builder": "^22.10.5",
+    "electron": "^20.0.0",
+    "electron-builder": "^24.0.0",
     "electron-notarize": "^1.0.0",
-    "electron-packager": "^15.4.0",
-    "electron-rebuild": "^3.2.7",
+    "electron-packager": "^17.0.0",
+    "@electron/rebuild": "^3.3.1",
     "folder-zip-sync": "^1.0.5",
     "run-script-os": "^1.1.1"
   },
