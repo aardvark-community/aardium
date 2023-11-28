@@ -267,20 +267,18 @@ module Aardium =
 
     let feed = "https://www.nuget.org/api/v2/package"
     let packageBaseName = "Aardium"
-    let version = 
-        let infoVersion = 
-            typeof<AardiumOffscreenServer>.Assembly.GetCustomAttributes(true)
-            |> Array.tryPick (function
-                | :? System.Reflection.AssemblyInformationalVersionAttribute as att -> Some att.InformationalVersion
-                | _ -> None
-            )
-        match infoVersion with
-        | Some v -> v
-        | None ->
-            if RuntimeInformation.IsOSPlatform(OSPlatform.Windows) then "2.0.5"
-            elif RuntimeInformation.IsOSPlatform(OSPlatform.Linux) then "2.0.5"
-            elif RuntimeInformation.IsOSPlatform(OSPlatform.OSX) then "2.0.7"
-            else failwith "unsupported platform"
+
+    let version =
+        let asm = typeof<AardiumOffscreenServer>.Assembly
+
+        asm.GetCustomAttributes(true)
+        |> Array.tryPick (function
+            | :? System.Reflection.AssemblyInformationalVersionAttribute as att -> Some att.InformationalVersion
+            | _ -> None
+        )
+        |> Option.defaultWith (fun _ ->
+            string <| asm.GetName().Version
+        )
     
     [<Literal>]
     let private Win = "Win32"
