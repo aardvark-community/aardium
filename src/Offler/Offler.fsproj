@@ -13,6 +13,7 @@
   <ItemGroup>
     <Compile Include="SharedMemory.fs" />
     <Compile Include="Offler.fs" />
+    <None Include="paket.references" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Aardium\Aardium.fsproj" />

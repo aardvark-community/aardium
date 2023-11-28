@@ -12,25 +12,24 @@ open Aardvark.Base
 let main argv =
     Aardvark.Init()
     
-    if false then
-        // local aardium
-        let distPath = 
-            Path.Combine(__SOURCE_DIRECTORY__, "..", "..", "Aardium", "dist")
-        let distName =
-            if RuntimeInformation.IsOSPlatform OSPlatform.Windows then "Aardium-win32-x64"
-            elif RuntimeInformation.IsOSPlatform OSPlatform.Linux then "Aardium-linux-x64"
-            elif RuntimeInformation.IsOSPlatform OSPlatform.OSX then "Aardium-darwin-x64"
-            else failwith "bad platform"
+    // local aardium
+    let distPath = 
+        Path.Combine(__SOURCE_DIRECTORY__, "..", "..", "Aardium", "dist")
+    let distName =
+        if RuntimeInformation.IsOSPlatform OSPlatform.Windows then "Aardium-win32-x64"
+        elif RuntimeInformation.IsOSPlatform OSPlatform.Linux then "Aardium-linux-x64"
+        elif RuntimeInformation.IsOSPlatform OSPlatform.OSX then "Aardium-darwin-x64"
+        else failwith "bad platform"
 
-        let exe = Path.Combine(distPath, distName)
-        //Aardium.initPath exe
-        Aardium.init()
+    let exe = Path.Combine(distPath, distName)
+    Aardium.initPath exe
+    //Aardium.init()
 
+    let offler = false
+
+    if offler then
         Offler.Logger <- fun _ msg ->
             printfn "[Offler] %s" msg
-        
-        
-
 
         let offler = 
             new Offler {
@@ -43,7 +42,7 @@ let main argv =
         let mutable index = 0
         offler.Add(fun info ->
             printfn "image %03d" index
-            offler.LastImage.SaveAsImage (sprintf @"C:\Users\Schorsch\Desktop\offler\%03d.png" index)
+            offler.LastImage.Save (sprintf @"C:\Users\Schorsch\Desktop\offler\%03d.png" index)
             index <- index + 1
         )
 
@@ -58,22 +57,7 @@ let main argv =
 
         offler.Dispose()
 
-
-        //let ico = Path.Combine(exe,"resources","app","aardvark.ico")
-
-        Aardium.run { 
-            experimental true
-            //size {| P_X = 800; P_Y = 600 |}
-            url "https://developer.mozilla.org/en-US/docs/Web/CSS/backdrop-filter#Browser_compatibility"
-            //windowoptions {| titleBarStyle = "customButtonsOnHover"; frame= false |}
-            title "test"
-            autoclose true // close when mainwindow closes
-            hideDock true // hide dock on mac
-        }
-
-        0 
     else 
-        Aardium.initPath "/Users/schorsch/Development/aardium/Aardium/dist/Aardium-darwin-arm64"
         Aardium.run { 
             experimental true
             //size {| P_X = 800; P_Y = 600 |}
@@ -84,4 +68,4 @@ let main argv =
             hideDock false // hide dock on mac
         }
 
-        0 
+    0 

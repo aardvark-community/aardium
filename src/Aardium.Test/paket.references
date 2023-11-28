@@ -1,4 +1,3 @@
+group Test
+
 FSharp.Core
-Aardvark.Base.Tensors
-Newtonsoft.Json
-FSys
