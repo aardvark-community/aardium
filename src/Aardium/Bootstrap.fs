@@ -201,7 +201,7 @@ module AardiumConfig =
         [|
         
             match cfg.debug with
-            | true -> yield "--debug"
+            | true -> yield "--dev"
             | false -> ()
 
             match cfg.menu with
@@ -503,6 +503,15 @@ module Aardium =
         [<CustomOperation("experimental")>]
         member x.Experimental(cfg : AardiumConfig, v : bool) =
             { cfg with experimental = v }
+
+        [<CustomOperation("log")>]
+        member x.Log(cfg : AardiumConfig, log : bool -> string -> unit) =
+            { cfg with log = log }
+
+        [<CustomOperation("log")>]
+        member x.Log(cfg : AardiumConfig, log : string -> unit) =
+            { cfg with log = fun _ -> log }
+
 
         member x.Run(cfg : AardiumConfig) =
             runConfig cfg

@@ -22,7 +22,7 @@ const options =
   ['w' , 'width=ARG'              , 'initial window width'],
   ['h' , 'height=ARG'             , 'initial window height'],
   ['u' , 'url=ARG'                , 'initial url' ],
-  ['g' , 'debug'                  , 'show debug tools'],
+  ['g' , 'dev'                    , 'show debug tools'],
   ['i' , 'icon=ARG'               , 'icon file'],
   ['t' , 'title=ARG'              , 'window title'],
   ['m' , 'menu'                   , 'display default menu'],
@@ -128,7 +128,7 @@ function createWindow () {
     console.log("fullscreen: " + n);
     mainWindow.setFullScreen(n);
   });
-  if(opt.debug) {
+  if(opt.dev) {
     
     electronLocalshortcut.register(mainWindow,'F10',() => {
       console.log("devtools");

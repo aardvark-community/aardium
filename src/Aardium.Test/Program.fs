@@ -66,6 +66,7 @@ let main argv =
             title "test"
             autoclose true // close when mainwindow closes
             hideDock false // hide dock on mac
+            log (fun msg -> Report.Line(2, $"[Aardium] %s{msg}"))
         }
 
     0 
