@@ -13,16 +13,7 @@ let main argv =
     Aardvark.Init()
     
     // local aardium
-    let distPath = 
-        Path.Combine(__SOURCE_DIRECTORY__, "..", "..", "Aardium", "dist")
-    let distName =
-        if RuntimeInformation.IsOSPlatform OSPlatform.Windows then "Aardium-win32-x64"
-        elif RuntimeInformation.IsOSPlatform OSPlatform.Linux then "Aardium-linux-x64"
-        elif RuntimeInformation.IsOSPlatform OSPlatform.OSX then "Aardium-darwin-x64"
-        else failwith "bad platform"
-
-    let exe = Path.Combine(distPath, distName)
-    Aardium.initPath exe
+    Aardium.initAt <| Path.Combine(__SOURCE_DIRECTORY__, "..", "..", "Aardium", "dist")
     //Aardium.init()
 
     let offler = true

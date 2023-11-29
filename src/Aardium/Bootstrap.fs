@@ -6,25 +6,51 @@ open System.IO.Compression
 open System.Net
 open System.Net.Http
 open System.Threading
-open System.Threading.Tasks
 open System.Diagnostics
+open System.Runtime.InteropServices
 open Microsoft.FSharp.Reflection
 
+[<AutoOpen>]
+module private Utilities =
 
-[<Struct>]
-type Progress(received : int64, total : int64) =
-    member x.Received = received
-    member x.Total = total
-    member x.Relative = float received / float total
+    let failf fmt =
+        Printf.kprintf (fun str ->
+            failwithf "[Aardium] %s" str
+        ) fmt
 
-    override x.ToString() =
-        sprintf "%.2f%%" (100.0 * float received / float total)
+    module Log =
+        let line fmt =
+            Printf.kprintf (fun str ->
+                printfn "[Aardium] %s" str
+            ) fmt
 
-module Tools =
+    module Directory =
 
-    type private Message =
-        | Log of string
-        | Error of string
+        let isWritable path =
+            try
+                let file = Path.Combine(path, Path.GetRandomFileName())
+                use _ = File.Create(file, 0, FileOptions.DeleteOnClose)
+                true
+            with _ ->
+                false
+
+        let create (ensureWritable : bool) (path : string) =
+            if not <| Directory.Exists path then
+                Directory.CreateDirectory path |> ignore
+
+            if ensureWritable && not <| isWritable path then
+                raise <| UnauthorizedAccessException($"Cannot create files in '{path}'.")
+
+module private Tools =
+
+    [<Struct>]
+    type Progress(received : int64, total : int64) =
+        member x.Received = received
+        member x.Total = total
+        member x.Relative = float received / float total
+
+        override x.ToString() =
+            sprintf "%.2f%%" (100.0 * float received / float total)
 
     let unzip (file : string) (folder : string) =
         try
@@ -34,6 +60,36 @@ module Tools =
         with _ ->
             if Directory.Exists folder then Directory.Delete(folder, true)
             reraise()
+
+    let untar (file : string) (folder : string) =
+        let args = $"-zxvf \"%s{file}\" -C \"%s{folder}\""
+        Log.line "tar %s" args
+
+        use p = new Process()
+        p.StartInfo.FileName <- "tar"
+        p.StartInfo.Arguments <- args
+        p.StartInfo.RedirectStandardOutput <- true
+        p.StartInfo.RedirectStandardError <- true
+        p.StartInfo.UseShellExecute <- false
+        p.StartInfo.CreateNoWindow <- true
+
+        let output = ResizeArray<string>()
+
+        p.OutputDataReceived.Add (fun args ->
+            if not <| String.IsNullOrWhiteSpace args.Data then
+                lock output (fun _ -> output.Add args.Data)
+        )
+        p.ErrorDataReceived.Add ignore
+
+        p.Start() |> ignore
+        p.BeginOutputReadLine()
+        p.BeginErrorReadLine()
+        p.WaitForExit()
+
+        if p.ExitCode <> 0 then
+            let output = output |> String.concat Environment.NewLine
+            let info = if String.IsNullOrEmpty output then "" else ": " + output
+            failf "Failed to untar '%s'%s" file info
 
     let download (progress : Progress -> unit) (url : string) (file : string) =
         try
@@ -45,15 +101,17 @@ module Tools =
                 if f.HasValue then f.Value
                 else 1L <<< 30
 
+            if not response.IsSuccessStatusCode then
+                let code = response.StatusCode
+                raise <| HttpRequestException($"Http GET request failed with status code {int code} ({code}).")
+
             let mutable lastProgress = Progress(0L,len)
             progress lastProgress
             let sw = System.Diagnostics.Stopwatch.StartNew()
 
-
             use stream = response.Content.ReadAsStreamAsync().Result
             if File.Exists file then File.Delete file
             use output = File.OpenWrite(file)
-
 
             let buffer : byte[] = Array.zeroCreate (4 <<< 20)
 
@@ -78,7 +136,9 @@ module Tools =
             if File.Exists file then File.Delete file
             reraise()
 
-    let startThread (f : unit -> unit) =
+module private ElectronProcess =
+
+    let private startThread (f : unit -> unit) =
         let t = new Thread(ThreadStart(f), IsBackground = true)
         t.Start()
 
@@ -116,7 +176,7 @@ module Tools =
     let exec (file : string) (logger : bool -> string -> unit) (args : string[]) =
         use log = new System.Collections.Concurrent.BlockingCollection<string * bool>()
 
-        let proc =
+        use proc =
             args |> start file (fun error str ->
                 log.Add((str, error))
             )
@@ -135,6 +195,71 @@ module Tools =
 
         with :? OperationCanceledException ->
             ()
+
+module private Strings =
+
+    module Platform =
+
+        [<Literal>]
+        let Win = "Win32"
+
+        [<Literal>]
+        let Linux = "Linux"
+
+        [<Literal>]
+        let Darwin = "Darwin"
+
+    let version =
+        let asm = typeof<Tools.Progress>.Assembly
+
+        asm.GetCustomAttributes(true)
+        |> Array.tryPick (function
+            | :? System.Reflection.AssemblyInformationalVersionAttribute as att -> Some att.InformationalVersion
+            | _ -> None
+        )
+        |> Option.defaultWith (fun _ ->
+            string <| asm.GetName().Version
+        )
+
+    let platform =
+        if RuntimeInformation.IsOSPlatform(OSPlatform.Windows) then Platform.Win
+        elif RuntimeInformation.IsOSPlatform(OSPlatform.Linux) then Platform.Linux
+        elif RuntimeInformation.IsOSPlatform(OSPlatform.OSX) then Platform.Darwin
+        else "Unknown"
+
+    let architecture =
+        match RuntimeInformation.ProcessArchitecture with
+        | Architecture.X64 -> "x64"
+        | Architecture.X86 -> "x86"
+        | Architecture.Arm -> "arm"
+        | Architecture.Arm64 -> "arm64"
+        | arch ->
+            failf $"Unsupported architecture '{arch}'."
+
+    let packageName = $"Aardium-%s{platform}-%s{architecture}"
+
+    let packageUrl =
+        $"https://www.nuget.org/api/v2/package/%s{packageName}/%s{version}"
+
+    let binaryName =
+        match platform with
+        | Platform.Win    -> "Aardium.exe"
+        | Platform.Linux  -> "Aardium"
+        | Platform.Darwin -> "Aardium.app/Contents/MacOS/Aardium"
+        | platform ->
+            failf $"Unsupported platform '{platform}'."
+
+    let binaryPaths = [|
+        binaryName
+        Path.Combine(architecture, version, binaryName)
+        Path.Combine(architecture, version, "tools", binaryName)
+        Path.Combine(packageName, binaryName)
+    |]
+
+    // Use local AppData like Aardvark
+    // On Windows we don't want to put > 100MB into the Roaming folder.
+    let defaultCachePath =
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Aardium")
 
 type AardiumConfig =
     {
@@ -223,167 +348,137 @@ module AardiumConfig =
         |]
 
 type AardiumOffscreenServer internal (proc : Process, port : int) =
+    let mutable disposed = false
 
-    member x.IsRunning = not proc.HasExited
+    member x.IsRunning = not disposed && not proc.HasExited
     member x.Port = port
-    member x.Stop() = if not proc.HasExited then proc.Kill()
 
-    member x.Dispose() = x.Stop()
+    member x.Stop() =
+        if x.IsRunning then proc.Kill()
+
+    member x.Dispose() =
+        x.Stop()
+        if not disposed then
+            proc.Dispose()
+            disposed <- true
+
     interface System.IDisposable with
         member x.Dispose() = x.Dispose()
 
 module Aardium =
-    open System.Runtime.InteropServices
+    let mutable private binaryPath = ""
 
-    let feed = "https://www.nuget.org/api/v2/package"
-    let packageBaseName = "Aardium"
+    /// Returns whether Aardium has been successfully initialized.
+    let isInitialized() =
+        not (String.IsNullOrWhiteSpace binaryPath) && File.Exists binaryPath
 
-    let version =
-        let asm = typeof<AardiumOffscreenServer>.Assembly
-
-        asm.GetCustomAttributes(true)
-        |> Array.tryPick (function
-            | :? System.Reflection.AssemblyInformationalVersionAttribute as att -> Some att.InformationalVersion
-            | _ -> None
+    let private findBinary (path : string) =
+        Strings.binaryPaths |> Array.tryPick (fun p ->
+            let p = Path.Combine(path, p)
+            if File.Exists p then Some p else None
         )
-        |> Option.defaultWith (fun _ ->
-            string <| asm.GetName().Version
-        )
+        |> Option.defaultValue ""
 
-    [<Literal>]
-    let private Win = "Win32"
-    [<Literal>]
-    let private Linux = "Linux"
-    [<Literal>]
-    let private Darwin = "Darwin"
+    /// Initializes Aardium in the given directory.
+    /// If the binary cannot be found, it is retrieved from nuget.org.
+    let initAt (path : string) =
+        if not <| isInitialized() then
+            let mutable path = path
 
-    let private platform =
-        if RuntimeInformation.IsOSPlatform(OSPlatform.Windows) then Win
-        elif RuntimeInformation.IsOSPlatform(OSPlatform.Linux) then Linux
-        elif RuntimeInformation.IsOSPlatform(OSPlatform.OSX) then Darwin
-        else failwith "unsupported platform"
+            if String.IsNullOrWhiteSpace path then
+                path <- Strings.defaultCachePath
 
-    let private arch =
-        match RuntimeInformation.ProcessArchitecture with
-        | Architecture.X64 -> "x64"
-        | Architecture.X86 -> "x86"
-        | Architecture.Arm -> "arm"
-        | Architecture.Arm64 -> "arm64"
-        | _ -> failwith "unsupported architecture"
+            path <- Path.GetFullPath path
+            binaryPath <- findBinary path
 
-    let private packageName = sprintf "%s-%s-%s" packageBaseName platform arch
-
-    let private exeName =
-        match platform with
-            | Win -> "Aardium.exe"
-            | Linux -> "Aardium"
-            | Darwin -> "Aardium.app/Contents/MacOS/Aardium"
-            | _ -> failwith "unsuporrted platform"
-
-    //let private cachePath =
-    //    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Aardium")
-
-    let mutable private cachePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Aardium")
-    let mutable private executablePath = ""
-
-    module Libc =
-        open System.Runtime.InteropServices
-        [<DllImport("libc")>]
-        extern int chmod(string path, int mode)
-
-    let initPath (pp : string) =
-        if executablePath = "" then
-            let path = Path.GetFullPath pp
-            cachePath <- path
-            let info = DirectoryInfo cachePath
-            if not info.Exists then info.Create()
-
-            if File.Exists(Path.Combine(path, exeName)) then
-                executablePath <- Path.Combine(path, exeName)
-            else
-                let aardiumPath = Path.Combine(cachePath, arch, version)
-
-                let info = DirectoryInfo aardiumPath
-                if info.Exists && File.Exists(Path.Combine(aardiumPath, "tools", exeName)) then
-                    executablePath <- Path.Combine(aardiumPath, "tools", exeName)
-
-                else
-                    info.Create()
-                    let fileName = sprintf "%s.%s.nupkg" packageName version
-                    let tempFile = Path.Combine(cachePath, arch, fileName)
-                    let url = sprintf "%s/%s/%s" feed packageName version
-
-                    Console.WriteLine("downloading aardium: " + url)
-                    Tools.download (fun s -> Console.Write("\rdownloading aardium ... {0}% ", sprintf "%.0f" (s.Relative * 100.0))) url tempFile
-                    Console.WriteLine("")
-                    Console.WriteLine("downloaded: " + tempFile)
-                    Console.WriteLine(sprintf "unzipping %s to %s" tempFile aardiumPath)
-                    Tools.unzip tempFile aardiumPath
-
-                    match platform with
-                        (*| Darwin ->
-
-                            let zip = Path.Combine(aardiumPath, "tools", "Aardium-1.0.0-mac.zip")
-                            let mutable retryCount = 0
-                            Console.WriteLine(sprintf "looking for; %s" zip)
-                            printfn "exists: %A" (File.Exists zip)
-                            let outDir = Path.Combine(aardiumPath, "tools")
-                            Console.WriteLine(sprintf "unzipping using tar %s to %s" zip outDir)
-                            //ZipFile.ExtractToDirectory(zip, outDir)
-
-                            let command = "-zxvf " + zip + " -C ./"
-                            let outDir = Path.Combine(aardiumPath, "tools")
-                            Console.WriteLine("workdir: " + outDir + "- " + "tar " + command)
-                            let info = ProcessStartInfo("tar", command)
-                            info.WorkingDirectory <- outDir
-                            info.UseShellExecute <- false
-                            info.CreateNoWindow <- true
-                            info.RedirectStandardError <- true
-                            info.RedirectStandardInput <- true
-                            info.RedirectStandardOutput <- true
-                            let proc = System.Diagnostics.Process.Start(info)
-                            proc.WaitForExit()
-                            if proc.ExitCode <> 0 then
-                                proc.StandardError.ReadToEnd() |> printfn "ERROR: %s"
-                            Console.WriteLine("untared")
-
-                            Console.WriteLine("unzipped")*)
-                        | Linux | Darwin ->
-                            let command = "-zxvf Aardium-" + platform + "-" + arch + ".tar.gz -C ./"
-                            let outDir = Path.Combine(aardiumPath, "tools")
-                            Console.WriteLine("workdir: " + outDir + "- " + "tar " + command)
-                            let info = ProcessStartInfo("tar", command)
-                            info.WorkingDirectory <- outDir
-                            info.UseShellExecute <- false
-                            info.CreateNoWindow <- true
-                            info.RedirectStandardError <- true
-                            info.RedirectStandardInput <- true
-                            info.RedirectStandardOutput <- true
-                            let proc = System.Diagnostics.Process.Start(info)
-                            proc.WaitForExit()
-                            if proc.ExitCode <> 0 then
-                                proc.StandardError.ReadToEnd() |> printfn "ERROR: %s"
-                            Console.WriteLine("untared")
-                        | _ -> ()
-
-
-                    let path = Path.Combine(aardiumPath, "tools", exeName)
-
-                    if File.Exists(path) then
-                        executablePath <- path
+            if not <| isInitialized() then
+                // Ensure we have a directory to work in (i.e. write access)
+                try
+                    Directory.create true path
+                with _ ->
+                    if path <> Strings.defaultCachePath then
+                        Log.line "Failed to create or use directory '%s' with write access, falling back to '%s'" path Strings.defaultCachePath
+                        path <- Strings.defaultCachePath
+                        Directory.create true path
                     else
-                        failwithf "could not find executable after download: %s" path
+                        failf "Failed to create or use directory '%s' with write access." path
 
+                // Download nupkg
+                let nupkgPath =
+                    Path.Combine(path, $"%s{Strings.packageName}-%s{Strings.version}.nupkg")
+
+                Log.line "Downloading from %s to '%s'" Strings.packageUrl nupkgPath
+
+                (Strings.packageUrl, nupkgPath) ||> Tools.download (fun p ->
+                    Log.line "Downloading %.0f%%" (p.Relative * 100.0)
+                )
+
+                Log.line "Download complete, extracting..."
+
+                // Extract (for non-Windows we have to extract the contained tar.gz as well)
+                let finalPath = Path.Combine(path, Strings.architecture, Strings.version)
+
+                try
+                    Directory.create false finalPath
+                    Tools.unzip nupkgPath finalPath
+
+                    binaryPath <- findBinary path
+
+                    match Strings.platform with
+                    | Strings.Platform.Linux | Strings.Platform.Darwin when not <| isInitialized() ->
+                        let toolsPath = Path.Combine(path, "tools")
+                        let tarPath = Path.Combine(toolsPath, $"Aardium-%s{Strings.platform}-%s{Strings.version}.tar.gz")
+
+                        if File.Exists tarPath then
+                            Tools.untar tarPath toolsPath
+                            try File.Delete tarPath
+                            with _ -> ()
+                    | _ ->
+                        ()
+
+                    if not <| isInitialized() then
+                        failf "Could not find binary after extracting to '%s'." finalPath
+
+                finally
+                    try File.Delete nupkgPath
+                    with _ -> ()
+
+        Log.line "Initialized at '%s'" binaryPath
+
+    /// Initializes Aardium in the default cache location.
+    /// If the binary cannot be found, it is retrieved from nuget.org.
+    /// The default location is AppData/Local/Aardium on Windows and ~/.local/share/Aardium on Linux / MacOS.
     let init() =
-        let path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), (sprintf "Aardium-%s" (version.Replace(".","_"))))
-        Console.WriteLine("Init Aardium at: " + path)
-        initPath path
+        initAt null
+
+    [<Obsolete("Use Aardium.initAt instead.")>]
+    let initPath (path : string) =
+        initAt path
 
     let runConfig (cfg : AardiumConfig)  =
-        if File.Exists executablePath then
-            Tools.exec executablePath cfg.log (AardiumConfig.toArgs cfg)
+        if isInitialized() then
+            ElectronProcess.exec binaryPath cfg.log (AardiumConfig.toArgs cfg)
         else
-            failwithf "could not locate aardium"
+            raise <| InvalidOperationException("Aardium has not been initialized.")
+
+    let startOffscreenServer (port : int) (logger : bool -> string -> unit) =
+        let port =
+            if port <> 0 then
+                port
+            else
+                let l = System.Net.Sockets.TcpListener(IPAddress.Loopback, 0)
+                l.Start()
+                let p = l.LocalEndpoint |> unbox<System.Net.IPEndPoint>
+                let port = p.Port
+                l.Stop()
+                port
+
+        if isInitialized() then
+            logger false (sprintf "starting server with port %d" port)
+            let proc = ElectronProcess.start binaryPath logger [|sprintf "--server=%d" port|]
+            new AardiumOffscreenServer(proc, port)
+        else
+            raise <| InvalidOperationException("Aardium has not been initialized.")
 
     type AardiumBuilder() =
         member x.Yield(()) = AardiumConfig.empty
@@ -408,7 +503,7 @@ module Aardium =
                         |> sprintf "{ %s }"
                     else
                         let seq = t.GetInterface(typedefof<seq<_>>.FullName)
-                        if isNull seq then failwith "unknown type"
+                        if isNull seq then failf "Unknown type %A" t
                         else
                             let e = (value :?> System.Collections.IEnumerable).GetEnumerator()
                             let t = seq.GetGenericArguments().[0]
@@ -420,7 +515,7 @@ module Aardium =
                 let json = toJSON typeof<'a> value
                 { cfg with woptions = Some json }
             else
-                failwith "bad window options"
+                failf "Bad window options."
 
         [<CustomOperation("url")>]
         member x.Url(cfg : AardiumConfig, url : string) =
@@ -480,28 +575,7 @@ module Aardium =
         member x.Log(cfg : AardiumConfig, log : string -> unit) =
             { cfg with log = fun _ -> log }
 
-
         member x.Run(cfg : AardiumConfig) =
             runConfig cfg
 
-
     let run = AardiumBuilder()
-
-    let startOffscreenServer (port : int) (logger : bool -> string -> unit) =
-        let port =
-            if port <> 0 then
-                port
-            else
-                let l = System.Net.Sockets.TcpListener(IPAddress.Loopback, 0)
-                l.Start()
-                let p = l.LocalEndpoint |> unbox<System.Net.IPEndPoint>
-                let port = p.Port
-                l.Stop()
-                port
-
-        if File.Exists executablePath then
-            logger false (sprintf "starting server with port %d" port)
-            let proc = Tools.start executablePath logger [|sprintf "--server=%d" port|]
-            new AardiumOffscreenServer(proc, port)
-        else
-            failwith "could not locate aardium"

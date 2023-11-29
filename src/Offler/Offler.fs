@@ -398,7 +398,7 @@ type Offler internal(ws : WebSocket, shared : ISharedMemory, incremental : bool,
         Aardium.init()
 
     static member Init(path : string) =
-        Aardium.initPath path
+        Aardium.initAt path
 
     static member Logger 
         with get() = logger
