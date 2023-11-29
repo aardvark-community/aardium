@@ -426,8 +426,8 @@ module Aardium =
 
                     match Strings.platform with
                     | Strings.Platform.Linux | Strings.Platform.Darwin when not <| isInitialized() ->
-                        let toolsPath = Path.Combine(path, "tools")
-                        let tarPath = Path.Combine(toolsPath, $"Aardium-%s{Strings.platform}-%s{Strings.version}.tar.gz")
+                        let toolsPath = Path.Combine(finalPath, "tools")
+                        let tarPath = Path.Combine(toolsPath, $"Aardium-%s{Strings.platform}-%s{Strings.architecture}.tar.gz")
 
                         if File.Exists tarPath then
                             Tools.untar tarPath toolsPath
