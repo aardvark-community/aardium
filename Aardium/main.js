@@ -2,11 +2,9 @@ require('@electron/remote/main').initialize()
 console.error(process.argv);
 
 const electron = require('electron')
-// Module to control application life.
 const app = electron.app
-// Module to create native browser window.
 const BrowserWindow = electron.BrowserWindow
-const electronLocalshortcut = require('electron-localshortcut');
+const electronLocalShortcut = require('electron-localshortcut');
 
 const path = require('path')
 const getopt = require('node-getopt')
@@ -32,7 +30,7 @@ const availableOptions =
 
 const defaultIcon =
   (process.platform === 'linux') ? "aardvark.png" :
-  (process.platform === 'darwin' ? "aardvark_128.png" : "aardvark.ico");
+  (process.platform === 'darwin') ? "aardvark_128.png" : "aardvark.ico";
 
 const config = {
   url: new URL("http://ask.aardvark.graphics"),
@@ -87,43 +85,40 @@ function parseOptions(argv) {
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow
 
-function createWindow () {
+function createMainWindow () {
+  const webPreferences = {
+    sandbox: false,
+    nodeIntegration: false,
+    contextIsolation: false,
+    nativeWindowOpen: true,
+    enableRemoteModule: true,
+    experimentalFeatures: config.experimental,
+    webSecurity: false,
+    devTools: config.debug,
+    preload: path.join(__dirname, 'src/preload.js')
+  }
 
-  const defaultOptions =
-    {
-      width: config.width,
-      height: config.height,
-      title: config.title,
-      icon: config.icon,
-      fullscreen: config.fullscreen,
-      fullscreenable: true,
-      frame: !config.frameless,
-      webPreferences: {
-        sandbox: false,
-        nodeIntegration: false,
-        contextIsolation: false,
-        nativeWindowOpen: true,
-        enableRemoteModule: true,
-        experimentalFeatures: config.experimental,
-        webSecurity: false,
-        devTools: true,
-        preload: path.join(__dirname, 'src/preload.js')
-      }
-    };
+  const defaultOptions = {
+    width: config.width,
+    height: config.height,
+    title: config.title,
+    icon: config.icon,
+    fullscreen: config.fullscreen,
+    fullscreenable: true,
+    frame: !config.frameless,
+    webPreferences: webPreferences
+  };
 
   const windowOptions =
     Object.assign({}, defaultOptions, config.windowOptions);
 
   // Create the browser window.
   mainWindow = new BrowserWindow(windowOptions);
-  require("@electron/remote/main").enable(mainWindow.webContents);
 
   if (config.hideDock) {
     electron.app.dock.hide();
     if (config.autoclose) mainWindow.on('closed', () => electron.app.quit());
   }
-
-  if (!config.menu) mainWindow.setMenu(null);
 
   if (process.platform == "darwin") {
     electron.app.dock.setIcon(config.icon);
@@ -132,24 +127,6 @@ function createWindow () {
   if (config.preventTitleChange) {
     mainWindow.on('page-title-updated', (e,c) => {
       e.preventDefault();
-    });
-  }
-
-  electronLocalshortcut.register(mainWindow,'F11',() => {
-    var n = !mainWindow.isFullScreen();
-    console.log("fullscreen: " + n);
-    mainWindow.setFullScreen(n);
-  });
-
-  if(config.debug) {
-    electronLocalshortcut.register(mainWindow,'F10',() => {
-      console.log("devtools");
-      mainWindow.webContents.toggleDevTools();
-    });
-
-    electronLocalshortcut.register(mainWindow,'F5',() => {
-      console.log("reload");
-      mainWindow.webContents.reload(true);
     });
   }
 
@@ -163,6 +140,20 @@ function createWindow () {
     // when you should delete the corresponding element.
     mainWindow = null
   })
+
+  // Make sure preload and other settings are applied
+  // to windows opened from the renderer.
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    return {
+      action: 'allow',
+      overrideBrowserWindowOptions: {
+        icon: config.icon,
+        frame: !config.frameless,
+        fullscreenable: true,
+        webPreferences: webPreferences
+      }
+    }
+  });
 }
 
 function runOffscreenServer(port) {
@@ -363,12 +354,38 @@ function runOffscreenServer(port) {
 }
 
 function ready() {
-  parseOptions(process.argv);
-
   if(config.server) {
     runOffscreenServer(config.server);
+
   } else {
-    createWindow();
+    // Enable remoting and short-cuts in the window-created-callback, so
+    // this is also applied to windows opened via window.open() from the renderer.
+    electron.app.on('browser-window-created',function(_, window) {
+      require("@electron/remote/main").enable(window.webContents);
+
+      // The default menu already has a fullscreen shortcut.
+      if (!config.menu) {
+        electronLocalShortcut.register(window, 'F11', () => {
+          var n = !window.isFullScreen();
+          console.log("fullscreen: " + n);
+          window.setFullScreen(n);
+        });
+      }
+
+      if (config.debug) {
+        electronLocalShortcut.register(window, 'F10', () => {
+          console.log("devtools");
+          window.webContents.toggleDevTools();
+        });
+
+        electronLocalShortcut.register(window, 'F5', () => {
+          console.log("reload");
+          window.webContents.reload(true);
+        });
+      }
+    });
+
+    createMainWindow();
 
     // Quit when all windows are closed.
     app.on('window-all-closed', function () {
@@ -383,14 +400,16 @@ function ready() {
       // On OS X it's common to re-create a window in the app when the
       // dock icon is clicked and there are no other windows open.
       if (mainWindow === null) {
-        createWindow()
+        createMainWindow()
       }
     })
-
-    // In this file you can include the rest of your app's specific main process
-    // code. You can also put them in separate files and require them here.
   }
 }
+
+// Parse command line options and disable menu before ready is called.
+// See: https://www.electronjs.org/docs/latest/tutorial/performance#8-call-menusetapplicationmenunull-when-you-do-not-need-a-default-menu
+parseOptions(process.argv);
+if (!config.menu) electron.Menu.setApplicationMenu(null)
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
