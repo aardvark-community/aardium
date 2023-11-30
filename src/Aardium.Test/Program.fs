@@ -11,9 +11,20 @@ open Aardvark.Base
 [<EntryPoint>]
 let main argv =
     Aardvark.Init()
-    
+
     // local aardium
-    Aardium.initAt <| Path.Combine(__SOURCE_DIRECTORY__, "..", "..", "Aardium", "dist")
+    let distFolder =
+        if RuntimeInformation.IsOSPlatform OSPlatform.Windows then "Aardium-win32-x64"
+        elif RuntimeInformation.IsOSPlatform OSPlatform.Linux then "Aardium-linux-x64"
+        elif RuntimeInformation.IsOSPlatform OSPlatform.OSX then
+            match RuntimeInformation.ProcessArchitecture with
+            | Architecture.X64 -> "mac"
+            | Architecture.Arm64 -> "mac-arm64"
+            | _ -> failwith "bad architecture"
+        else
+            failwith "bad platform"
+
+    Aardium.initAt <| Path.Combine(__SOURCE_DIRECTORY__, "..", "..", "Aardium", "dist", distFolder)
     //Aardium.init()
 
     let offler = true

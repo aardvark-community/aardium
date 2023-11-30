@@ -2,22 +2,17 @@ require('@electron/remote/main').initialize()
 console.error(process.argv);
 
 const electron = require('electron')
-const os = require('os')
 // Module to control application life.
 const app = electron.app
 // Module to create native browser window.
 const BrowserWindow = electron.BrowserWindow
 const electronLocalshortcut = require('electron-localshortcut');
 
-
-//app.allowRendererProcessReuse = false;
-
 const path = require('path')
-const url = require('url')
 const getopt = require('node-getopt')
 const ws = require("nodejs-websocket")
 
-const options =
+const availableOptions =
 [
   ['w' , 'width=ARG'              , 'initial window width'],
   ['h' , 'height=ARG'             , 'initial window height'],
@@ -34,90 +29,107 @@ const options =
   [''  , 'woptions=ARG'           , 'BrowserWindow options'],
   [''  , 'server=port'            , 'run server for offscreen rendering' ]
 ];
+
+const defaultIcon =
+  (process.platform === 'linux') ? "aardvark.png" :
+  (process.platform === 'darwin' ? "aardvark_128.png" : "aardvark.ico");
+
+const config = {
+  url: new URL("http://ask.aardvark.graphics"),
+  width: 1024,
+  height: 768,
+  icon: path.join(__dirname, defaultIcon),
+  title: "Aardvark rocks \\o/",
+  preventTitleChange: false,
+  menu: false,
+  hideDock: false,
+  autoclose: false,
+  experimental: false,
+  frameless: false,
+  fullscreen: false,
+  debug: false,
+  windowOptions: {}
+}
+
+function parseOptions(argv) {
+  const args = (!argv) ? [] : argv;
+  const opt = getopt.create(availableOptions).bindHelp().parse(args).options;
+
+  if (opt.server) {
+    config.server = opt.server;
+    return;
+  }
+
+  if (opt.url) config.url = new URL(opt.url);
+  if (opt.width) config.width = parseInt(opt.width);
+  if (opt.height) config.height = parseInt(opt.height);
+  if (opt.icon) config.icon = opt.icon;
+  if (opt.experimental) config.experimental = true;
+  if (opt.frameless) config.frameless = true;
+  if (opt.fullscreen) config.fullscreen = true;
+  if (opt.dev) config.debug = true;
+  if (opt.menu) config.menu = true;
+  if (opt.autoclose) config.autoclose = true;
+
+  if (opt.title) {
+    config.title = opt.title;
+    config.preventTitleChange = true;
+  }
+
+  if (opt.hideDock && process.platform == 'darwin') {
+    config.hideDock = true;
+  }
+
+  if (opt.woptions) config.windowOptions = JSON.parse(opt.woptions);
+}
+
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow
 
-var hideDock = false;
-
 function createWindow () {
-
-  var plat = os.platform();
-  var defaultIcon = "aardvark.ico";
-  console.warn(plat);
-  if(plat == 'linux') defaultIcon = "aardvark.png";
-  else if(plat == 'darwin') defaultIcon = "aardvark_128.png";
-
-  var argv = process.argv;
-  if(!argv) argv = [];
-
-  var res = getopt.create(options).bindHelp().parse(argv); 
-  var preventTitleChange = true;
-  var opt = res.options;
-  if(!opt.width) opt.width = 1024;
-  if(!opt.height) opt.height = 768;
-  if(!opt.url) opt.url = "http://ask.aardvark.graphics";
-  if(!opt.icon) opt.icon = path.join(__dirname, defaultIcon);
-  if(!opt.title) {
-    opt.title = "Aardvark rocks \\o/";
-    preventTitleChange = false;
-  }
-  if(opt.hideDock && plat == 'darwin'){
-    hideDock = true;
-  }
-  
-  if(!opt.experimental) opt.experimental = false;
-  if(!opt.frameless) opt.frameless = false;
 
   const defaultOptions =
     {
-      width: parseInt(opt.width),
-      height: parseInt(opt.height),
-      title: opt.title,
-      icon: opt.icon,
-      fullscreen: opt.fullscreen,
+      width: config.width,
+      height: config.height,
+      title: config.title,
+      icon: config.icon,
+      fullscreen: config.fullscreen,
       fullscreenable: true,
-      frame: !opt.frameless,
+      frame: !config.frameless,
       webPreferences: {
         sandbox: false,
-        nodeIntegration: false, 
+        nodeIntegration: false,
         contextIsolation: false,
-        nativeWindowOpen: true,    
+        nativeWindowOpen: true,
         enableRemoteModule: true,
-        experimentalFeatures: opt.experimental,
-        webSecurity: false, 
+        experimentalFeatures: config.experimental,
+        webSecurity: false,
         devTools: true,
         preload: path.join(__dirname, 'src/preload.js')
       }
     };
 
-  const windowOptions = 
-    opt.woptions ? Object.assign({}, defaultOptions, JSON.parse(opt.woptions)) : defaultOptions;
+  const windowOptions =
+    Object.assign({}, defaultOptions, config.windowOptions);
 
   // Create the browser window.
   mainWindow = new BrowserWindow(windowOptions);
   require("@electron/remote/main").enable(mainWindow.webContents);
 
-  electron.app.on('browser-window-created',function(e,window) {
-      window.setMenu(null);
-      window.setTitle(opt.title);
-      window.on('page-title-updated', (e,c) => {
-        e.preventDefault();
-      });
-  });
-  
-  if(hideDock) {
+  if (config.hideDock) {
     electron.app.dock.hide();
-    if(opt.autoclose) mainWindow.on('closed', () => electron.app.quit());
+    if (config.autoclose) mainWindow.on('closed', () => electron.app.quit());
   }
 
+  if (!config.menu) mainWindow.setMenu(null);
 
-  if(!opt.menu) mainWindow.setMenu(null);
-  if(plat == "darwin") {
-    electron.app.dock.setIcon(opt.icon);
+  if (process.platform == "darwin") {
+    electron.app.dock.setIcon(config.icon);
   }
-  // if(process.argv.length > 2) url = process.argv[2];
-  if(preventTitleChange) {
+
+  if (config.preventTitleChange) {
     mainWindow.on('page-title-updated', (e,c) => {
       e.preventDefault();
     });
@@ -128,8 +140,8 @@ function createWindow () {
     console.log("fullscreen: " + n);
     mainWindow.setFullScreen(n);
   });
-  if(opt.dev) {
-    
+
+  if(config.debug) {
     electronLocalshortcut.register(mainWindow,'F10',() => {
       console.log("devtools");
       mainWindow.webContents.toggleDevTools();
@@ -139,16 +151,10 @@ function createWindow () {
       console.log("reload");
       mainWindow.webContents.reload(true);
     });
-
-	
-
   }
 
   // and load the index.html of the app.
-  mainWindow.loadURL(opt.url);
-
-  // Open the DevTools.
-  // mainWindow.webContents.openDevTools()
+  mainWindow.loadURL(config.url.toString());
 
   // Emitted when the window is closed.
   mainWindow.on('closed', function () {
@@ -223,7 +229,7 @@ function runOffscreenServer(port) {
                                 height: cmd.height
                             })
                         arr = new Uint8Array(mapping.buffer, 0);
-                       
+
 
                         win.setContentSize(cmd.width, cmd.height);
                         win.loadURL(cmd.url);
@@ -357,18 +363,13 @@ function runOffscreenServer(port) {
 }
 
 function ready() {
-  var argv = process.argv;
-  if(!argv) argv = [];
+  parseOptions(process.argv);
 
-  var res = getopt.create(options).bindHelp().parse(argv); 
-  var opt = res.options;
-  
-  if(opt.server) {
-      runOffscreenServer(opt.server);
-  }
-  else {
+  if(config.server) {
+    runOffscreenServer(config.server);
+  } else {
     createWindow();
-      
+
     // Quit when all windows are closed.
     app.on('window-all-closed', function () {
       // On OS X it is common for applications and their menu bar
@@ -389,12 +390,9 @@ function ready() {
     // In this file you can include the rest of your app's specific main process
     // code. You can also put them in separate files and require them here.
   }
-  
 }
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', ready)
-
-
+app.whenReady().then(ready);

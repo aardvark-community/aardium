@@ -139,7 +139,7 @@ module private Tools =
 module private ElectronProcess =
 
     let private startThread (f : unit -> unit) =
-        let t = new Thread(ThreadStart(f), IsBackground = true)
+        let t = Thread(ThreadStart(f), IsBackground = true)
         t.Start()
 
     let start (file : string) (logger : bool -> string -> unit) (args : string[]) =
@@ -253,7 +253,6 @@ module private Strings =
         binaryName
         Path.Combine(architecture, version, binaryName)
         Path.Combine(architecture, version, "tools", binaryName)
-        Path.Combine(packageName, binaryName)
     |]
 
     // Use local AppData like Aardvark
@@ -293,7 +292,7 @@ module AardiumConfig =
             hideDock = false
             autoclose = false
             woptions = None
-            log = fun isError ln -> ()
+            log = fun _isError _ln -> ()
         }
 
     let internal toArgs (cfg : AardiumConfig) =
