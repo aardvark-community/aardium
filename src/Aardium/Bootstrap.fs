@@ -9,6 +9,7 @@ open System.Threading
 open System.Diagnostics
 open System.Runtime.InteropServices
 open Microsoft.FSharp.Reflection
+open Aardvark.Base
 
 [<AutoOpen>]
 module private Utilities =
@@ -17,12 +18,6 @@ module private Utilities =
         Printf.kprintf (fun str ->
             failwithf "[Aardium] %s" str
         ) fmt
-
-    module Log =
-        let line fmt =
-            Printf.kprintf (fun str ->
-                printfn "[Aardium] %s" str
-            ) fmt
 
     module Directory =
 
@@ -63,7 +58,7 @@ module private Tools =
 
     let untar (file : string) (folder : string) =
         let args = $"-zxvf \"%s{file}\" -C \"%s{folder}\""
-        Log.line "tar %s" args
+        Report.Line($"tar {args}")
 
         use p = new Process()
         p.StartInfo.FileName <- "tar"
@@ -379,6 +374,8 @@ module Aardium =
     /// Initializes Aardium in the given directory.
     /// If the binary cannot be found, it is retrieved from nuget.org.
     let initAt (path : string) =
+        Report.BeginTimed("Initializing Aardium")
+
         if not <| isInitialized() then
             let mutable path = path
 
@@ -394,7 +391,7 @@ module Aardium =
                     Directory.create true path
                 with _ ->
                     if path <> Strings.defaultCachePath then
-                        Log.line "Failed to create or use directory '%s' with write access, falling back to '%s'" path Strings.defaultCachePath
+                        Report.Warn($"Failed to create or use directory '%s{path}' with write access, falling back to '%s{Strings.defaultCachePath}'")
                         path <- Strings.defaultCachePath
                         Directory.create true path
                     else
@@ -404,13 +401,16 @@ module Aardium =
                 let nupkgPath =
                     Path.Combine(path, $"%s{Strings.packageName}-%s{Strings.version}.nupkg")
 
-                Log.line "Downloading from %s to '%s'" Strings.packageUrl nupkgPath
+                Report.Begin($"Downloading from {Strings.packageUrl}")
 
                 (Strings.packageUrl, nupkgPath) ||> Tools.download (fun p ->
-                    Log.line "Downloading %.0f%%" (p.Relative * 100.0)
+                    Report.Progress p.Relative
                 )
 
-                Log.line "Download complete, extracting..."
+                Report.Progress 1.0
+                Report.End() |> ignore
+
+                Report.BeginTimed("Extracting")
 
                 // Extract (for non-Windows we have to extract the contained tar.gz as well)
                 let finalPath = Path.Combine(path, Strings.architecture, Strings.version)
@@ -437,10 +437,12 @@ module Aardium =
                         failf "Could not find binary after extracting to '%s'." finalPath
 
                 finally
+                    Report.EndTimed() |> ignore
                     try File.Delete nupkgPath
                     with _ -> ()
 
-        Log.line "Initialized at '%s'" binaryPath
+        Report.Line($"Binary: {binaryPath}")
+        Report.EndTimed() |> ignore
 
     /// Initializes Aardium in the default cache location.
     /// If the binary cannot be found, it is retrieved from nuget.org.
@@ -500,7 +502,7 @@ module Aardium =
                         |> sprintf "{ %s }"
                     else
                         let seq = t.GetInterface(typedefof<seq<_>>.FullName)
-                        if isNull seq then failf "Unknown type %A" t
+                        if isNull seq then failf "Unknown type %A in window options." t
                         else
                             let e = (value :?> System.Collections.IEnumerable).GetEnumerator()
                             let t = seq.GetGenericArguments().[0]
@@ -512,7 +514,7 @@ module Aardium =
                 let json = toJSON typeof<'a> value
                 { cfg with woptions = Some json }
             else
-                failf "Bad window options."
+                failf "Window options must be a record."
 
         [<CustomOperation("url")>]
         member x.Url(cfg : AardiumConfig, url : string) =
