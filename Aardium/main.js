@@ -22,6 +22,7 @@ const availableOptions =
   ['d' , 'hideDock'               , 'hides dock toolback on mac'],
   ['a' , 'autoclose'              , 'autoclose on main window close'],
   [''  , 'fullscreen'             , 'display fullscreen window'],
+  [''  , 'maximize'               , 'display maximized window'],
   ['e' , 'experimental'           , 'enable experimental webkit extensions' ],
   [''  , 'frameless'              , 'frameless window'],
   [''  , 'woptions=ARG'           , 'BrowserWindow options'],
@@ -45,6 +46,7 @@ const config = {
   experimental: false,
   frameless: false,
   fullscreen: false,
+  maximize: false,
   debug: false,
   windowOptions: {}
 }
@@ -65,6 +67,7 @@ function parseOptions(argv) {
   if (opt.experimental) config.experimental = true;
   if (opt.frameless) config.frameless = true;
   if (opt.fullscreen) config.fullscreen = true;
+  if (opt.maximize) config.maximize = true;
   if (opt.dev) config.debug = true;
   if (opt.menu) config.menu = true;
   if (opt.autoclose) config.autoclose = true;
@@ -99,6 +102,7 @@ function createMainWindow () {
   }
 
   const defaultOptions = {
+    show: false,
     width: config.width,
     height: config.height,
     title: config.title,
@@ -154,6 +158,9 @@ function createMainWindow () {
       }
     }
   });
+
+  if (config.maximize && !config.fullscreen) mainWindow.maximize();
+  mainWindow.show();
 }
 
 function runOffscreenServer(port) {

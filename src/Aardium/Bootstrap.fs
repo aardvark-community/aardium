@@ -263,6 +263,7 @@ type AardiumConfig =
         title        : Option<string>
         menu         : bool
         fullscreen   : bool
+        maximize     : bool
         hideDock     : bool
         autoclose    : bool
         experimental : bool
@@ -281,6 +282,7 @@ module AardiumConfig =
             title = None
             menu = false
             fullscreen = false
+            maximize = false
             experimental = false
             hideDock = false
             autoclose = false
@@ -300,6 +302,10 @@ module AardiumConfig =
 
             match cfg.fullscreen with
             | true -> yield "--fullscreen"
+            | false -> ()
+
+            match cfg.maximize with
+            | true -> yield "--maximize"
             | false -> ()
 
             match cfg.experimental with
@@ -402,10 +408,15 @@ module Aardium =
                     Path.Combine(path, $"%s{Strings.packageName}-%s{Strings.version}.nupkg")
 
                 Report.Begin($"Downloading from {Strings.packageUrl}")
+                Report.Progress 0.0
 
-                (Strings.packageUrl, nupkgPath) ||> Tools.download (fun p ->
-                    Report.Progress p.Relative
-                )
+                try
+                    (Strings.packageUrl, nupkgPath) ||> Tools.download (fun p ->
+                        Report.Progress p.Relative
+                    )
+                with _ ->
+                    Report.End(" - failed") |> ignore
+                    reraise()
 
                 Report.Progress 1.0
                 Report.End() |> ignore
@@ -549,6 +560,10 @@ module Aardium =
         [<CustomOperation("fullscreen")>]
         member x.Fullscreen(cfg : AardiumConfig, v : bool) =
             { cfg with fullscreen = v }
+
+        [<CustomOperation("maximize")>]
+        member x.Maximize(cfg : AardiumConfig, v : bool) =
+            { cfg with maximize = v }
 
         [<CustomOperation("hideDock")>]
         member x.HideDock(cfg : AardiumConfig, v : bool) =
