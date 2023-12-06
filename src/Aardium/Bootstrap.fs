@@ -230,8 +230,6 @@ module private Strings =
     let architecture =
         match RuntimeInformation.ProcessArchitecture with
         | Architecture.X64 -> "x64"
-        | Architecture.X86 -> "x86"
-        | Architecture.Arm -> "arm"
         | Architecture.Arm64 -> "arm64"
         | arch ->
             failf $"Unsupported architecture '{arch}'."
