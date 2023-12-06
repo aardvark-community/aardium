@@ -255,20 +255,21 @@ module private Strings =
 
 type AardiumConfig =
     {
-        width        : Option<int>
-        height       : Option<int>
-        url          : Option<string>
-        debug        : bool
-        icon         : Option<string>
-        title        : Option<string>
-        menu         : bool
-        fullscreen   : bool
-        maximize     : bool
-        hideDock     : bool
-        autoclose    : bool
-        experimental : bool
-        woptions     : Option<string>
-        log          : bool -> string -> unit
+        width            : Option<int>
+        height           : Option<int>
+        url              : Option<string>
+        debug            : bool
+        icon             : Option<string>
+        title            : Option<string>
+        menu             : bool
+        fullscreen       : bool
+        maximize         : bool
+        openExternalUrls : bool
+        hideDock         : bool
+        autoclose        : bool
+        experimental     : bool
+        woptions         : Option<string>
+        log              : bool -> string -> unit
     }
 
 module AardiumConfig =
@@ -283,6 +284,7 @@ module AardiumConfig =
             menu = false
             fullscreen = false
             maximize = false
+            openExternalUrls = false
             experimental = false
             hideDock = false
             autoclose = false
@@ -306,6 +308,10 @@ module AardiumConfig =
 
             match cfg.maximize with
             | true -> yield "--maximize"
+            | false -> ()
+
+            match cfg.openExternalUrls with
+            | true -> yield "--open-external-urls"
             | false -> ()
 
             match cfg.experimental with
@@ -564,6 +570,10 @@ module Aardium =
         [<CustomOperation("maximize")>]
         member x.Maximize(cfg : AardiumConfig, v : bool) =
             { cfg with maximize = v }
+
+        [<CustomOperation("openExternalUrls")>]
+        member x.OpenExternalUrls(cfg : AardiumConfig, v : bool) =
+            { cfg with openExternalUrls = v }
 
         [<CustomOperation("hideDock")>]
         member x.HideDock(cfg : AardiumConfig, v : bool) =

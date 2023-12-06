@@ -8,7 +8,7 @@ const electronLocalShortcut = require('electron-localshortcut');
 
 const path = require('path')
 const getopt = require('node-getopt')
-const ws = require("nodejs-websocket")
+const ws = require('nodejs-websocket')
 
 const availableOptions =
 [
@@ -26,7 +26,8 @@ const availableOptions =
   ['e' , 'experimental'           , 'enable experimental webkit extensions' ],
   [''  , 'frameless'              , 'frameless window'],
   [''  , 'woptions=ARG'           , 'BrowserWindow options'],
-  [''  , 'server=port'            , 'run server for offscreen rendering' ]
+  [''  , 'server=port'            , 'run server for offscreen rendering' ],
+  [''  , 'open-external-urls'     , 'open external URLs in Aardium rather than the default browser']
 ];
 
 const defaultIcon =
@@ -47,8 +48,10 @@ const config = {
   frameless: false,
   fullscreen: false,
   maximize: false,
+  openExternal: false,
   debug: false,
-  windowOptions: {}
+  windowOptions: {},
+  webPreferences: {}
 }
 
 function parseOptions(argv) {
@@ -67,6 +70,7 @@ function parseOptions(argv) {
   if (opt.experimental) config.experimental = true;
   if (opt.frameless) config.frameless = true;
   if (opt.fullscreen) config.fullscreen = true;
+  if (opt['open-external-urls']) config.openExternal = true;
   if (opt.maximize) config.maximize = true;
   if (opt.dev) config.debug = true;
   if (opt.menu) config.menu = true;
@@ -82,14 +86,8 @@ function parseOptions(argv) {
   }
 
   if (opt.woptions) config.windowOptions = JSON.parse(opt.woptions);
-}
 
-// Keep a global reference of the window object, if you don't, the window will
-// be closed automatically when the JavaScript object is garbage collected.
-let mainWindow
-
-function createMainWindow () {
-  const webPreferences = {
+  config.webPreferences = {
     sandbox: false,
     nodeIntegration: false,
     contextIsolation: false,
@@ -99,8 +97,24 @@ function createMainWindow () {
     webSecurity: false,
     devTools: config.debug,
     preload: path.join(__dirname, 'src/preload.js')
-  }
+  };
+}
 
+function isLocalUrl(url) {
+  try {
+    const localOrigins = [ 'localhost', '127.0.0.1', config.url.origin ];
+    return localOrigins.includes((new URL(url)).origin);
+
+  } catch(_) {
+    return false;
+  }
+}
+
+// Keep a global reference of the window object, if you don't, the window will
+// be closed automatically when the JavaScript object is garbage collected.
+let mainWindow
+
+function createMainWindow () {
   const defaultOptions = {
     show: false,
     width: config.width,
@@ -110,7 +124,7 @@ function createMainWindow () {
     fullscreen: config.fullscreen,
     fullscreenable: true,
     frame: !config.frameless,
-    webPreferences: webPreferences
+    webPreferences: config.webPreferences
   };
 
   const windowOptions =
@@ -144,20 +158,6 @@ function createMainWindow () {
     // when you should delete the corresponding element.
     mainWindow = null
   })
-
-  // Make sure preload and other settings are applied
-  // to windows opened from the renderer.
-  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-    return {
-      action: 'allow',
-      overrideBrowserWindowOptions: {
-        icon: config.icon,
-        frame: !config.frameless,
-        fullscreenable: true,
-        webPreferences: webPreferences
-      }
-    }
-  });
 
   if (config.maximize && !config.fullscreen) mainWindow.maximize();
   mainWindow.show();
@@ -365,10 +365,31 @@ function ready() {
     runOffscreenServer(config.server);
 
   } else {
-    // Enable remoting and short-cuts in the window-created-callback, so
-    // this is also applied to windows opened via window.open() from the renderer.
-    electron.app.on('browser-window-created',function(_, window) {
+    // Apply some settings in the window-created-callback, so
+    // they are also applied to windows opened via window.open() from the renderer.
+    electron.app.on('browser-window-created', function(_, window) {
       require("@electron/remote/main").enable(window.webContents);
+
+      // Make sure preload and other settings are applied
+      // to windows opened from the renderer.
+      window.webContents.setWindowOpenHandler(({ url }) => {
+        const isLocal = isLocalUrl(url);
+
+        if (!config.openExternal && !isLocal) {
+          electron.shell.openExternal(url);
+          return { action: 'deny' };
+        }
+
+        return {
+          action: 'allow',
+          overrideBrowserWindowOptions: {
+            icon: config.icon,
+            frame: !config.frameless,
+            fullscreenable: true,
+            webPreferences: isLocal ? config.webPreferences : {}
+          }
+        }
+      });
 
       // The default menu already has a fullscreen shortcut.
       if (!config.menu) {
