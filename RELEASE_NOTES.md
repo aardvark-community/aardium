@@ -1,3 +1,6 @@
+### 2.1.0-prerelease0001
+* initial prerelease
+
 ### 2.0.10-prerelease0007
 * disabled nodeIntegration
 
