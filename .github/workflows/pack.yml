@@ -3,78 +3,78 @@ on:
   push:
     branches:
       - master
-      - notarize
+      - electron20
     paths:
       - RELEASE_NOTES.md
 jobs:
-  mac_arm64:
-    name: OSX (arm64)
-    runs-on: macos-latest
-    steps:  
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Add Cert to Keychain
-        uses: apple-actions/import-codesign-certs@v1
-        with: 
-          p12-file-base64: ${{ secrets.MAC_CERT_BASE64 }}
-          p12-password: ${{ secrets.MAC_CERT_PASSWORD }}
-      - name: Yarn Install
-        working-directory: Aardium
-        run: yarn install
-      - name: Package
-        working-directory: Aardium
-        run: yarn dist:darwin:arm64
-        env:
-          MAC_CERT_BASE64: ${{ secrets.MAC_CERT_BASE64 }}
-          MAC_CERT_PASSWORD: ${{ secrets.MAC_CERT_PASSWORD }}
-          MAC_DEV_PASSWORD: ${{ secrets.MAC_DEV_PASSWORD }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Upload Aardium
-        uses: actions/upload-artifact@v2
-        with:
-          name: mac_arm64
-          path: Aardium/dist/Aardium-Darwin-arm64.tar.gz
-  mac_x64:
-    name: OSX (x64)
-    runs-on: macos-latest
-    steps:  
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Add Cert to Keychain
-        uses: apple-actions/import-codesign-certs@v1
-        with: 
-          p12-file-base64: ${{ secrets.MAC_CERT_BASE64 }}
-          p12-password: ${{ secrets.MAC_CERT_PASSWORD }}
-      - name: Yarn Install
-        working-directory: Aardium
-        run: yarn install
-      - name: Package
-        working-directory: Aardium
-        run: yarn dist:darwin:x64
-        env:
-          MAC_CERT_BASE64: ${{ secrets.MAC_CERT_BASE64 }}
-          MAC_CERT_PASSWORD: ${{ secrets.MAC_CERT_PASSWORD }}
-          MAC_DEV_PASSWORD: ${{ secrets.MAC_DEV_PASSWORD }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Upload Aardium
-        uses: actions/upload-artifact@v2
-        with:
-          name: mac_x64
-          path: Aardium/dist/Aardium-Darwin-x64.tar.gz
+  # mac_arm64:
+  #   name: OSX (arm64)
+  #   runs-on: macos-latest
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
+  #     - name: Add Cert to Keychain
+  #       uses: apple-actions/import-codesign-certs@v1
+  #       with:
+  #         p12-file-base64: ${{ secrets.MAC_CERT_BASE64 }}
+  #         p12-password: ${{ secrets.MAC_CERT_PASSWORD }}
+  #     - name: Yarn Install
+  #       working-directory: Aardium
+  #       run: yarn install
+  #     - name: Package
+  #       working-directory: Aardium
+  #       run: yarn dist:darwin:arm64
+  #       env:
+  #         MAC_CERT_BASE64: ${{ secrets.MAC_CERT_BASE64 }}
+  #         MAC_CERT_PASSWORD: ${{ secrets.MAC_CERT_PASSWORD }}
+  #         MAC_DEV_PASSWORD: ${{ secrets.MAC_DEV_PASSWORD }}
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #     - name: Upload Aardium
+  #       uses: actions/upload-artifact@v3
+  #       with:
+  #         name: mac_arm64
+  #         path: Aardium/dist/Aardium-Darwin-arm64.tar.gz
+  # mac_x64:
+  #   name: OSX (x64)
+  #   runs-on: macos-latest
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
+  #     - name: Add Cert to Keychain
+  #       uses: apple-actions/import-codesign-certs@v1
+  #       with:
+  #         p12-file-base64: ${{ secrets.MAC_CERT_BASE64 }}
+  #         p12-password: ${{ secrets.MAC_CERT_PASSWORD }}
+  #     - name: Yarn Install
+  #       working-directory: Aardium
+  #       run: yarn install
+  #     - name: Package
+  #       working-directory: Aardium
+  #       run: yarn dist:darwin:x64
+  #       env:
+  #         MAC_CERT_BASE64: ${{ secrets.MAC_CERT_BASE64 }}
+  #         MAC_CERT_PASSWORD: ${{ secrets.MAC_CERT_PASSWORD }}
+  #         MAC_DEV_PASSWORD: ${{ secrets.MAC_DEV_PASSWORD }}
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #     - name: Upload Aardium
+  #       uses: actions/upload-artifact@v3
+  #       with:
+  #         name: mac_x64
+  #         path: Aardium/dist/Aardium-Darwin-x64.tar.gz
   linux_x64:
     name: Linux (x64)
     runs-on: ubuntu-latest
     steps:  
       - name: Checkout
-        uses: actions/checkout@v2
-      - name: Yarn Install
+        uses: actions/checkout@v3
+      - name: Npm Install
         working-directory: Aardium
-        run: yarn install
+        run: npm install
       - name: Package
         working-directory: Aardium
-        run: yarn dist:linux:x64
+        run: npm dist:linux:x64
       - name: Upload Aardium
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: linux_x64
           path: Aardium/dist/Aardium-Linux-x64.tar.gz
@@ -83,64 +83,63 @@ jobs:
     runs-on: windows-latest
     steps:  
       - name: Checkout
-        uses: actions/checkout@v2
-      - name: Yarn Install
+        uses: actions/checkout@v3
+      - name: Npm Install
         working-directory: Aardium
-        run: yarn install
+        run: npm install
       - name: Package
         working-directory: Aardium
-        run: yarn dist:win32:x64
+        run: npm dist:win32:x64
       - name: Upload Aardium
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: win32_x64
           path: Aardium/dist/Aardium-win32-x64
   final:
     name: Package
     needs: 
-      - mac_arm64
-      - mac_x64
+      # - mac_arm64
+      # - mac_x64
       - win32_x64
       - linux_x64
     runs-on: windows-latest
     steps:  
       - name: Checkout
-        uses: actions/checkout@v2
-      - name: Download OSX dependencies (x64)
-        uses: actions/download-artifact@v2
-        with:
-          name: mac_x64
-          path: Aardium/dist/Aardium-Darwin-x64.tar.gz
-      - name: Download OSX dependencies (arm64)
-        uses: actions/download-artifact@v2
-        with:
-          name: mac_arm64
-          path: Aardium/dist/Aardium-Darwin-arm64.tar.gz
+        uses: actions/checkout@v3
+      # - name: Download OSX dependencies (x64)
+      #   uses: actions/download-artifact@v3
+      #   with:
+      #     name: mac_x64
+      #     path: Aardium/dist/Aardium-Darwin-x64.tar.gz
+      # - name: Download OSX dependencies (arm64)
+      #   uses: actions/download-artifact@v3
+      #   with:
+      #     name: mac_arm64
+      #     path: Aardium/dist/Aardium-Darwin-arm64.tar.gz
       - name: Download Linux dependencies (x64)
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: linux_x64
           path: Aardium/dist/Aardium-Linux-x64.tar.gz
       - name: Download Windows dependencies (x64)
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: win32_x64
           path: Aardium\dist\Aardium-win32-x64
       - name: Install Dotnet
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '6.0.100'
+          global-json-file: global.json
       - name: Restore Tools
         run: dotnet tool restore
       - name: Restore
         run: dotnet paket restore
-      - name: Build
-        shell: cmd
-        run: dotnet build -c Release src\Aardium.sln
       - name: Pack
-        run: dotnet fsi pack.fsx
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: dotnet aardpack src\Aardium.sln --notag
       - name: Upload Package
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: packages
           path: bin\pack
