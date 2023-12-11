@@ -6,6 +6,7 @@ on:
       - electron20
     paths:
       - RELEASE_NOTES.md
+      - .github/workflows/pack.yml
 jobs:
   # mac_arm64:
   #   name: OSX (arm64)
@@ -72,7 +73,7 @@ jobs:
         run: npm install
       - name: Package
         working-directory: Aardium
-        run: npm dist:linux:x64
+        run: npm run dist:linux:x64
       - name: Upload Aardium
         uses: actions/upload-artifact@v3
         with:
@@ -89,7 +90,7 @@ jobs:
         run: npm install
       - name: Package
         working-directory: Aardium
-        run: npm dist:win32:x64
+        run: npm run dist:win32:x64
       - name: Upload Aardium
         uses: actions/upload-artifact@v3
         with:
