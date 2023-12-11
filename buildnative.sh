@@ -1,8 +1,7 @@
 #!/bin/bash
 
 cd Aardium
-npm install -g yarn
-yarn install
+npm install
 
 os=$(uname -s)
 if [ "$os" == "Darwin" ];
@@ -15,11 +14,11 @@ then
 
     if [ "$arch" == "x86_64" ];
     then
-        yarn dist:darwin:x64
+        npm run dist:darwin:x64
     else
-        yarn dist:darwin:arm64
+        npm run dist:darwin:arm64
     fi
 
 else
-    yarn dist:linux:x64
+    npm run dist:linux:x64
 fi
