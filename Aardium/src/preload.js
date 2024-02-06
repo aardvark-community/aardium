@@ -12,6 +12,9 @@ aardvark.openFileDialog = function(config, callback) {
 	electron.remote.dialog.showOpenDialog({properties: ['openFile', 'multiSelections']}).then(e => callback(e.filePaths));
 };
 
+aardvark.moveWindowTop = function () {
+	electron.remote.getCurrentWindow().moveTop();
+}
 
 aardvark.setMenu = function(template) {
 	const menu = rem.Menu.buildFromTemplate(template)
