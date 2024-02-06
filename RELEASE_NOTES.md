@@ -1,3 +1,6 @@
+### 2.1.0-prerelease0002
+* added aardvark.moveWindowTop
+
 ### 2.1.0-prerelease0001
 * initial prerelease
 
