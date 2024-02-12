@@ -122,7 +122,7 @@ module private Tools =
 
 
                 let p = Progress(read, len)
-                if sw.Elapsed.TotalSeconds >= 0.1 && p.Relative - lastProgress.Relative > 0.1 then
+                if sw.Elapsed.TotalSeconds >= 0.1 && p.Relative - lastProgress.Relative > 0.05 then
                     progress p
                     lastProgress <- p
                     sw.Restart()
@@ -445,6 +445,8 @@ module Aardium =
 
                         if File.Exists tarPath then
                             Tools.untar tarPath toolsPath
+                            binaryPath <- findBinary path
+
                             try File.Delete tarPath
                             with _ -> ()
                     | _ ->
