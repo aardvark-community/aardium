@@ -16,6 +16,10 @@ aardvark.moveWindowTop = function () {
 	electron.remote.getCurrentWindow().moveTop();
 }
 
+aardvark.focusWindow = function () {
+	electron.remote.getCurrentWindow().focus();
+}
+
 aardvark.setMenu = function(template) {
 	const menu = rem.Menu.buildFromTemplate(template)
 	electron.remote.Menu.setApplicationMenu(menu)
