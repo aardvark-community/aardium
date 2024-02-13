@@ -135,6 +135,7 @@ function createMainWindow () {
 
   // Create the browser window.
   mainWindow = new BrowserWindow(windowOptions);
+  mainWindow.maximizedChildren = [];
 
   if (config.hideDock) {
     electron.app.dock.hide();
@@ -161,6 +162,23 @@ function createMainWindow () {
     // when you should delete the corresponding element.
     mainWindow = null
   })
+
+  // Workaround for child windows not restoring as maximized on Windows
+  // See: https://github.com/electron/electron/issues/20540
+  if (config.multiwindow && process.platform === "win32") {
+    mainWindow.on('minimize', function () {
+      for (const child of mainWindow.getChildWindows()) {
+        if (child.isMaximized()) { mainWindow.maximizedChildren.push(child); }
+      }
+    });
+
+    mainWindow.on('restore', function () {
+      for (const child of mainWindow.getChildWindows()) {
+        if (mainWindow.maximizedChildren.includes(child)) { child.maximize(); }
+      }
+      mainWindow.maximizedChildren = [];
+    });
+  }
 
   if (config.maximize && !config.fullscreen) mainWindow.maximize();
   mainWindow.show();
