@@ -1,3 +1,6 @@
+### 2.1.0-prerelease0003
+* Added multiwindow option
+
 ### 2.1.0-prerelease0002
 * added aardvark.moveWindowTop
 
