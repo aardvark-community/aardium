@@ -122,7 +122,7 @@ module private Tools =
 
 
                 let p = Progress(read, len)
-                if sw.Elapsed.TotalSeconds >= 0.1 && p.Relative - lastProgress.Relative > 0.05 then
+                if sw.Elapsed.TotalSeconds >= 0.1 && p.Relative - lastProgress.Relative > 0.025 then
                     progress p
                     lastProgress <- p
                     sw.Restart()
@@ -264,6 +264,7 @@ type AardiumConfig =
         menu             : bool
         fullscreen       : bool
         maximize         : bool
+        multiwindow      : bool
         openExternalUrls : bool
         hideDock         : bool
         autoclose        : bool
@@ -284,6 +285,7 @@ module AardiumConfig =
             menu = false
             fullscreen = false
             maximize = false
+            multiwindow = true
             openExternalUrls = false
             experimental = false
             hideDock = false
@@ -308,6 +310,10 @@ module AardiumConfig =
 
             match cfg.maximize with
             | true -> yield "--maximize"
+            | false -> ()
+
+            match cfg.multiwindow with
+            | true -> yield "--multiwindow"
             | false -> ()
 
             match cfg.openExternalUrls with
@@ -572,6 +578,10 @@ module Aardium =
         [<CustomOperation("maximize")>]
         member x.Maximize(cfg : AardiumConfig, v : bool) =
             { cfg with maximize = v }
+
+        [<CustomOperation("multiwindow")>]
+        member x.Multiwindow(cfg : AardiumConfig, v : bool) =
+            { cfg with multiwindow = v }
 
         [<CustomOperation("openExternalUrls")>]
         member x.OpenExternalUrls(cfg : AardiumConfig, v : bool) =

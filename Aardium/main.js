@@ -23,6 +23,7 @@ const availableOptions =
   ['a' , 'autoclose'              , 'autoclose on main window close'],
   [''  , 'fullscreen'             , 'display fullscreen window'],
   [''  , 'maximize'               , 'display maximized window'],
+  [''  , 'multiwindow'            , 'minimize and restore child windows with their parent'],
   ['e' , 'experimental'           , 'enable experimental webkit extensions' ],
   [''  , 'frameless'              , 'frameless window'],
   [''  , 'woptions=ARG'           , 'BrowserWindow options'],
@@ -48,6 +49,7 @@ const config = {
   frameless: false,
   fullscreen: false,
   maximize: false,
+  multiwindow: false,
   openExternal: false,
   debug: false,
   windowOptions: {},
@@ -72,6 +74,7 @@ function parseOptions(argv) {
   if (opt.fullscreen) config.fullscreen = true;
   if (opt['open-external-urls']) config.openExternal = true;
   if (opt.maximize) config.maximize = true;
+  if (opt.multiwindow) config.multiwindow = true;
   if (opt.dev) config.debug = true;
   if (opt.menu) config.menu = true;
   if (opt.autoclose) config.autoclose = true;
@@ -369,6 +372,10 @@ function ready() {
     // they are also applied to windows opened via window.open() from the renderer.
     electron.app.on('browser-window-created', function(_, window) {
       require("@electron/remote/main").enable(window.webContents);
+
+      if (config.multiwindow && mainWindow instanceof BrowserWindow) {
+        window.setParentWindow(mainWindow);
+      }
 
       // Make sure preload and other settings are applied
       // to windows opened from the renderer.
