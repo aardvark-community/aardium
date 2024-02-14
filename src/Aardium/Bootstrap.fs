@@ -267,7 +267,6 @@ type AardiumConfig =
         multiwindow      : bool
         openExternalUrls : bool
         hideDock         : bool
-        autoclose        : bool
         experimental     : bool
         woptions         : Option<string>
         log              : bool -> string -> unit
@@ -289,7 +288,6 @@ module AardiumConfig =
             openExternalUrls = false
             experimental = false
             hideDock = false
-            autoclose = false
             woptions = None
             log = fun _isError _ln -> ()
         }
@@ -346,10 +344,6 @@ module AardiumConfig =
 
             match cfg.hideDock with
             | true -> yield! [| "--hideDock"|]
-            | false -> ()
-
-            match cfg.autoclose with
-            | true -> yield! [| "--autoclose"|]
             | false -> ()
 
             match cfg.woptions with
@@ -590,10 +584,6 @@ module Aardium =
         [<CustomOperation("hideDock")>]
         member x.HideDock(cfg : AardiumConfig, v : bool) =
             { cfg with hideDock = v }
-
-        [<CustomOperation("autoclose")>]
-        member x.AutoClose(cfg : AardiumConfig, v : bool) =
-            { cfg with autoclose = v }
 
         [<CustomOperation("menu")>]
         member x.Menu(cfg : AardiumConfig, v : bool) =

@@ -75,7 +75,6 @@ let main argv =
             url "https://developer.mozilla.org/en-US/docs/Web/CSS/backdrop-filter#Browser_compatibility"
             //windowoptions {| titleBarStyle = "customButtonsOnHover"; frame= false |}
             title "test"
-            autoclose true // close when mainwindow closes
             hideDock false // hide dock on mac
             log (fun msg -> Report.Line(2, $"[Aardium] %s{msg}"))
         }

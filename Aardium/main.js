@@ -20,7 +20,6 @@ const availableOptions =
   ['t' , 'title=ARG'              , 'window title'],
   ['m' , 'menu'                   , 'display default menu'],
   ['d' , 'hideDock'               , 'hides dock toolback on mac'],
-  ['a' , 'autoclose'              , 'autoclose on main window close'],
   [''  , 'fullscreen'             , 'display fullscreen window'],
   [''  , 'maximize'               , 'display maximized window'],
   [''  , 'multiwindow'            , 'minimize and restore child windows with their parent'],
@@ -44,7 +43,6 @@ const config = {
   preventTitleChange: false,
   menu: false,
   hideDock: false,
-  autoclose: false,
   experimental: false,
   frameless: false,
   fullscreen: false,
@@ -77,15 +75,11 @@ function parseOptions(argv) {
   if (opt.multiwindow) config.multiwindow = true;
   if (opt.dev) config.debug = true;
   if (opt.menu) config.menu = true;
-  if (opt.autoclose) config.autoclose = true;
+  if (opt.hideDock) config.hideDock = true;
 
   if (opt.title) {
     config.title = opt.title;
     config.preventTitleChange = true;
-  }
-
-  if (opt.hideDock && process.platform == 'darwin') {
-    config.hideDock = true;
   }
 
   if (opt.woptions) config.windowOptions = JSON.parse(opt.woptions);
@@ -137,12 +131,10 @@ function createMainWindow () {
   mainWindow = new BrowserWindow(windowOptions);
   mainWindow.maximizedChildren = [];
 
-  if (config.hideDock) {
-    electron.app.dock.hide();
-    if (config.autoclose) mainWindow.on('closed', () => electron.app.quit());
-  }
-
-  if (process.platform == "darwin") {
+  if (process.platform === 'darwin') {
+    if (config.hideDock) {
+      electron.app.dock.hide();
+    }
     electron.app.dock.setIcon(config.icon);
   }
 
@@ -444,7 +436,7 @@ function ready() {
     app.on('window-all-closed', function () {
       // On OS X it is common for applications and their menu bar
       // to stay active until the user quits explicitly with Cmd + Q
-      if (process.platform !== 'darwin') {
+      if (process.platform !== 'darwin' || config.hideDock) {
         app.quit()
       }
     })
