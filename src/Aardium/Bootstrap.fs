@@ -255,20 +255,49 @@ module private Strings =
 
 type AardiumConfig =
     {
+        /// Initial window width.
         width            : Option<int>
+
+        /// Initial window height.
         height           : Option<int>
+
+        /// Initial URL.
         url              : Option<string>
+
+        /// Enable debug / developer tools. Default is true.
         debug            : bool
+
+        /// Icon file path.
         icon             : Option<string>
+
+        /// Window title. If omitted the window title will change according to the document title.
         title            : Option<string>
+
+        /// Display the default menu. Default is false.
         menu             : bool
+
+        /// Open a fullscreen window. Default is false.
         fullscreen       : bool
+
+        /// Maximize the window after opening. Default is false.
         maximize         : bool
+
+        /// Minimize and restore seconary windows with the main window. Default is true.
         multiwindow      : bool
+
+        /// Open external URLs in Aardium rather than the default browser. Default is false.
         openExternalUrls : bool
+
+        /// Hide the application icon in the MacOS dock. Default is false.
         hideDock         : bool
+
+        /// Enable experimental Webkit features. Default is false.
         experimental     : bool
+
+        /// Additional window options.
         woptions         : Option<string>
+
+        /// Logging callback for Aardium output.
         log              : bool -> string -> unit
     }
 
@@ -501,6 +530,7 @@ module Aardium =
     type AardiumBuilder() =
         member x.Yield(()) = AardiumConfig.empty
 
+        /// Additional window options.
         [<CustomOperation("windowoptions")>]
         member x.WindowOptions(cfg : AardiumConfig, value : 'a) =
             if FSharpType.IsRecord(typeof<'a>, true) then
@@ -535,68 +565,84 @@ module Aardium =
             else
                 failf "Window options must be a record."
 
+        /// Initial URL.
         [<CustomOperation("url")>]
         member x.Url(cfg : AardiumConfig, url : string) =
             { cfg with url = Some url }
 
+        /// Icon file path.
         [<CustomOperation("icon")>]
         member x.Icon(cfg : AardiumConfig, file : string) =
             { cfg with icon = Some file }
 
+        /// Window title. If omitted the window title will change according to the document title.
         [<CustomOperation("title")>]
         member x.Title(cfg : AardiumConfig, title : string) =
             { cfg with title = Some title }
 
+        /// Initial window width.
         [<CustomOperation("width")>]
         member x.Width(cfg : AardiumConfig, w : int) =
             { cfg with width = Some w }
 
+        /// Initial window height.
         [<CustomOperation("height")>]
         member x.Height(cfg : AardiumConfig, h : int) =
             { cfg with height = Some h }
 
+        /// Initial window size.
         [<CustomOperation("size")>]
         member inline x.Size(cfg : AardiumConfig, v : ^a) =
             let w = (^a: (member P_X : int)(v))
             let h = (^a: (member P_Y : int)(v))
             { cfg with width = Some w; height = Some h }
 
+        /// Enable debug / developer tools.
         [<CustomOperation("debug")>]
         member x.Debug(cfg : AardiumConfig, v : bool) =
             { cfg with debug = v }
 
+        /// Open a fullscreen window.
         [<CustomOperation("fullscreen")>]
         member x.Fullscreen(cfg : AardiumConfig, v : bool) =
             { cfg with fullscreen = v }
 
+        /// Maximize the window after opening.
         [<CustomOperation("maximize")>]
         member x.Maximize(cfg : AardiumConfig, v : bool) =
             { cfg with maximize = v }
 
+        /// Minimize and restore seconary windows with the main window.
         [<CustomOperation("multiwindow")>]
         member x.Multiwindow(cfg : AardiumConfig, v : bool) =
             { cfg with multiwindow = v }
 
+        /// Open external URLs in Aardium rather than the default browser.
         [<CustomOperation("openExternalUrls")>]
         member x.OpenExternalUrls(cfg : AardiumConfig, v : bool) =
             { cfg with openExternalUrls = v }
 
+        /// Hide the application icon in the MacOS dock.
         [<CustomOperation("hideDock")>]
         member x.HideDock(cfg : AardiumConfig, v : bool) =
             { cfg with hideDock = v }
 
+        /// Display the default menu.
         [<CustomOperation("menu")>]
         member x.Menu(cfg : AardiumConfig, v : bool) =
             { cfg with menu = v }
 
+        /// Enable experimental Webkit features.
         [<CustomOperation("experimental")>]
         member x.Experimental(cfg : AardiumConfig, v : bool) =
             { cfg with experimental = v }
 
+        /// Logging callback for Aardium output.
         [<CustomOperation("log")>]
         member x.Log(cfg : AardiumConfig, log : bool -> string -> unit) =
             { cfg with log = log }
 
+        /// Logging callback for Aardium output.
         [<CustomOperation("log")>]
         member x.Log(cfg : AardiumConfig, log : string -> unit) =
             { cfg with log = fun _ -> log }
