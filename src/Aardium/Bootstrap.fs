@@ -261,6 +261,12 @@ type AardiumConfig =
         /// Initial window height.
         height           : Option<int>
 
+        /// Minimum window width.
+        minWidth         : Option<int>
+
+        /// Minimum window height.
+        minHeight        : Option<int>
+
         /// Initial URL.
         url              : Option<string>
 
@@ -306,6 +312,8 @@ module AardiumConfig =
         {
             width = None
             height = None
+            minWidth = None
+            minHeight = None
             url = None
             debug = true
             icon = None
@@ -357,6 +365,14 @@ module AardiumConfig =
 
             match cfg.height with
             | Some h -> yield! [| "--height=" + string h |]
+            | None -> ()
+
+            match cfg.minWidth with
+            | Some w -> yield! [| "--min-width=" + string w |]
+            | None -> ()
+
+            match cfg.minHeight with
+            | Some h -> yield! [| "--min-height=" + string h |]
             | None -> ()
 
             match cfg.url with
@@ -592,10 +608,27 @@ module Aardium =
 
         /// Initial window size.
         [<CustomOperation("size")>]
-        member inline x.Size(cfg : AardiumConfig, v : ^a) =
-            let w = (^a: (member P_X : int)(v))
-            let h = (^a: (member P_Y : int)(v))
+        member inline x.Size(cfg : AardiumConfig, s : ^Size) =
+            let w = (^Size: (member P_X : int)(s))
+            let h = (^Size: (member P_Y : int)(s))
             { cfg with width = Some w; height = Some h }
+
+        /// Minimum window width.
+        [<CustomOperation("minWidth")>]
+        member x.MinWidth(cfg : AardiumConfig, w : int) =
+            { cfg with minWidth = Some w }
+
+        /// Minimum window height.
+        [<CustomOperation("minHeight")>]
+        member x.MinHeight(cfg : AardiumConfig, h : int) =
+            { cfg with minHeight = Some h }
+
+        /// Minimum window size.
+        [<CustomOperation("minSize")>]
+        member inline x.MinSize(cfg : AardiumConfig, s : ^Size) =
+            let w = (^Size: (member P_X : int)(s))
+            let h = (^Size: (member P_Y : int)(s))
+            { cfg with minWidth = Some w; minHeight = Some h }
 
         /// Enable debug / developer tools.
         [<CustomOperation("debug")>]

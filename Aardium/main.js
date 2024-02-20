@@ -14,6 +14,8 @@ const availableOptions =
 [
   ['w' , 'width=ARG'              , 'initial window width'],
   ['h' , 'height=ARG'             , 'initial window height'],
+  [''  , 'min-width=ARG'          , 'minimum window width'],
+  [''  , 'min-height=ARG'         , 'minimum window height'],
   ['u' , 'url=ARG'                , 'initial url' ],
   ['g' , 'dev'                    , 'show debug tools'],
   ['i' , 'icon=ARG'               , 'icon file'],
@@ -38,6 +40,8 @@ const config = {
   url: new URL("http://ask.aardvark.graphics"),
   width: 1024,
   height: 768,
+  minWidth: 0,
+  minHeight: 0,
   icon: path.join(__dirname, defaultIcon),
   title: "Aardvark rocks \\o/",
   preventTitleChange: false,
@@ -66,6 +70,8 @@ function parseOptions(argv) {
   if (opt.url) config.url = new URL(opt.url);
   if (opt.width) config.width = parseInt(opt.width);
   if (opt.height) config.height = parseInt(opt.height);
+  if (opt['min-width']) config.minWidth = parseInt(opt['min-width']);
+  if (opt['min-height']) config.minHeight = parseInt(opt['min-height']);
   if (opt.icon) config.icon = opt.icon;
   if (opt.experimental) config.experimental = true;
   if (opt.frameless) config.frameless = true;
@@ -116,6 +122,8 @@ function createMainWindow () {
     show: false,
     width: config.width,
     height: config.height,
+    minWidth: config.minWidth,
+    minHeight: config.minHeight,
     title: config.title,
     icon: config.icon,
     fullscreen: config.fullscreen,
@@ -402,6 +410,8 @@ function ready() {
           overrideBrowserWindowOptions: {
             icon: config.icon,
             frame: !config.frameless,
+            minWidth: config.minWidth,
+            minHeight: config.minHeight,
             fullscreenable: true,
             webPreferences: isLocal ? config.webPreferences : {}
           }
