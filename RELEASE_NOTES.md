@@ -1,3 +1,7 @@
+### 2.1.0-prerelease0004
+* Added minimum window size option
+* Added workaround for fullscreen state handling of child window
+
 ### 2.1.0-prerelease0003
 * Added multiwindow option
 
