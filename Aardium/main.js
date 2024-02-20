@@ -146,12 +146,6 @@ function createMainWindow () {
     electron.app.dock.setIcon(config.icon);
   }
 
-  if (config.preventTitleChange) {
-    mainWindow.on('page-title-updated', (e,c) => {
-      e.preventDefault();
-    });
-  }
-
   // and load the index.html of the app.
   mainWindow.loadURL(config.url.toString());
 
@@ -412,11 +406,18 @@ function ready() {
             frame: !config.frameless,
             minWidth: config.minWidth,
             minHeight: config.minHeight,
+            title: config.title,
             fullscreenable: true,
             webPreferences: isLocal ? config.webPreferences : {}
           }
         }
       });
+
+      if (config.preventTitleChange) {
+        window.on('page-title-updated', (e,c) => {
+          e.preventDefault();
+        });
+      }
 
       // The default menu already has a fullscreen shortcut.
       if (!config.menu) {
