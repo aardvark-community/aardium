@@ -24,7 +24,7 @@ module private Utilities =
         let isWritable path =
             try
                 let file = Path.Combine(path, Path.GetRandomFileName())
-                use _ = File.Create(file, 0, FileOptions.DeleteOnClose)
+                use _ = File.Create(file, 1, FileOptions.DeleteOnClose)
                 true
             with _ ->
                 false
