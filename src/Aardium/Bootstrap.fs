@@ -270,7 +270,7 @@ type AardiumConfig =
         /// Initial URL.
         url              : Option<string>
 
-        /// Enable debug / developer tools. Default is true.
+        /// Enable debug / developer tools. Default is false.
         debug            : bool
 
         /// Icon file path.
@@ -319,7 +319,7 @@ module AardiumConfig =
             minWidth = None
             minHeight = None
             url = None
-            debug = true
+            debug = false
             icon = None
             title = None
             dynamicTitle = None
