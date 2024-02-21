@@ -600,7 +600,7 @@ module Aardium =
         member x.Icon(cfg : AardiumConfig, file : string) =
             { cfg with icon = Some file }
 
-        /// Initial Window title.
+        /// Initial window title.
         [<CustomOperation("title")>]
         member x.Title(cfg : AardiumConfig, title : string) =
             { cfg with title = Some title }
