@@ -276,8 +276,12 @@ type AardiumConfig =
         /// Icon file path.
         icon             : Option<string>
 
-        /// Window title. If omitted the window title will change according to the document title.
+        /// Initial window title.
         title            : Option<string>
+
+        /// If true, the window title will change according to the document title.
+        /// Defaults to true if no initial title is specified.
+        dynamicTitle     : Option<bool>
 
         /// Display the default menu. Default is false.
         menu             : bool
@@ -318,6 +322,7 @@ module AardiumConfig =
             debug = true
             icon = None
             title = None
+            dynamicTitle = None
             menu = false
             fullscreen = false
             maximize = false
@@ -382,6 +387,10 @@ module AardiumConfig =
             match cfg.title with
             | Some t -> yield! [| "--title=\"" + t + "\"" |]
             | None -> ()
+
+            match cfg.dynamicTitle, cfg.title with
+            | Some true, _ | None, None -> yield "--dynamic-title"
+            | _ -> ()
 
             match cfg.icon with
             | Some i -> yield! [| "--icon=\"" + i + "\"" |]
@@ -591,10 +600,16 @@ module Aardium =
         member x.Icon(cfg : AardiumConfig, file : string) =
             { cfg with icon = Some file }
 
-        /// Window title. If omitted the window title will change according to the document title.
+        /// Initial Window title.
         [<CustomOperation("title")>]
         member x.Title(cfg : AardiumConfig, title : string) =
             { cfg with title = Some title }
+
+        /// If true, the window title will change according to the document title.
+        /// Defaults to true if no initial title is specified.
+        [<CustomOperation("dynamicTitle")>]
+        member x.DynamicTitle(cfg : AardiumConfig, v : bool) =
+            { cfg with dynamicTitle = Some v }
 
         /// Initial window width.
         [<CustomOperation("width")>]

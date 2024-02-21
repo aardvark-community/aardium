@@ -19,7 +19,8 @@ const availableOptions =
   ['u' , 'url=ARG'                , 'initial url' ],
   ['g' , 'dev'                    , 'show debug tools'],
   ['i' , 'icon=ARG'               , 'icon file'],
-  ['t' , 'title=ARG'              , 'window title'],
+  ['t' , 'title=ARG'              , 'initial window title'],
+  [''  , 'dynamic-title'          , 'change the window title according to the document title'],
   ['m' , 'menu'                   , 'display default menu'],
   ['d' , 'hideDock'               , 'hides dock toolback on mac'],
   [''  , 'fullscreen'             , 'display fullscreen window'],
@@ -44,7 +45,7 @@ const config = {
   minHeight: 0,
   icon: path.join(__dirname, defaultIcon),
   title: "Aardvark rocks \\o/",
-  preventTitleChange: false,
+  preventTitleChange: true,
   menu: false,
   hideDock: false,
   experimental: false,
@@ -82,11 +83,8 @@ function parseOptions(argv) {
   if (opt.dev) config.debug = true;
   if (opt.menu) config.menu = true;
   if (opt.hideDock) config.hideDock = true;
-
-  if (opt.title) {
-    config.title = opt.title;
-    config.preventTitleChange = true;
-  }
+  if (opt.title) config.title = opt.title;
+  if (opt['dynamic-title']) config.preventTitleChange = false;
 
   if (opt.woptions) config.windowOptions = JSON.parse(opt.woptions);
 
