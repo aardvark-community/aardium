@@ -34,7 +34,7 @@
     "dotenv": "^14.3.2",
     "electron": "20.3.8",
     "electron-builder": "^24.9.1",
-    "electron-notarize": "^1.2.2",
+    "@electron/notarize": "^2.3.0",
     "electron-packager": "^17.1.2",
     "folder-zip-sync": "^1.0.5",
     "run-script-os": "^1.1.6"
