@@ -1,3 +1,18 @@
+### 2.1.0
+* Updated to Electron 20
+* Reworked bootstrap to be more robust and verbose
+* Added log operation to Aardium.run builder
+* Added maxmimize option
+* Added multiwindow option
+* Added minimum window size options
+* Added explicit switch for dynamic titles
+* Removed autoclose option (implied by hideDock)
+* Externals URLs are opened with the default browser
+* Improved support for secondary windows
+* Added aardvark.moveWindowTop
+* Added aardvark.focusWindow
+* Set debug to false by default
+
 ### 2.1.0-prerelease0005
 * Added explicit switch for dynamic titles
 * Fixed bootstrap on Windows
