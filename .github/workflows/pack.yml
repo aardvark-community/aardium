@@ -14,6 +14,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11.8'
       - name: Add Cert to Keychain
         uses: apple-actions/import-codesign-certs@v2
         with:
@@ -24,7 +28,7 @@ jobs:
         run: npm install
       - name: Package
         working-directory: Aardium
-        run: npm dist:darwin:arm64
+        run: npm run dist:darwin:arm64
         env:
           MAC_CERT_BASE64: ${{ secrets.MAC_CERT_BASE64 }}
           MAC_CERT_PASSWORD: ${{ secrets.MAC_CERT_PASSWORD }}
@@ -41,6 +45,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11.8'         
       - name: Add Cert to Keychain
         uses: apple-actions/import-codesign-certs@v2
         with:
@@ -51,7 +59,7 @@ jobs:
         run: npm install
       - name: Package
         working-directory: Aardium
-        run: npm dist:darwin:x64
+        run: npm run dist:darwin:x64
         env:
           MAC_CERT_BASE64: ${{ secrets.MAC_CERT_BASE64 }}
           MAC_CERT_PASSWORD: ${{ secrets.MAC_CERT_PASSWORD }}
