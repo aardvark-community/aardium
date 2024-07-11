@@ -1,3 +1,6 @@
+### 2.1.1-prerelease0001
+* Updated to NET 8 and Aardvark.Base 5.3
+
 ### 2.1.0
 * Updated to Electron 20
 * Reworked bootstrap to be more robust and verbose
