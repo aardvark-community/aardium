@@ -13,13 +13,13 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v4
         with:
           python-version: '3.11.8'
       - name: Add Cert to Keychain
-        uses: apple-actions/import-codesign-certs@v2
+        uses: apple-actions/import-codesign-certs@v3
         with:
           p12-file-base64: ${{ secrets.MAC_CERT_BASE64 }}
           p12-password: ${{ secrets.MAC_CERT_PASSWORD }}
@@ -35,7 +35,7 @@ jobs:
           MAC_DEV_PASSWORD: ${{ secrets.MAC_DEV_PASSWORD }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload Aardium
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: mac_arm64
           path: Aardium/dist/Aardium-Darwin-arm64.tar.gz
@@ -44,13 +44,13 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v4
         with:
           python-version: '3.11.8'         
       - name: Add Cert to Keychain
-        uses: apple-actions/import-codesign-certs@v2
+        uses: apple-actions/import-codesign-certs@v3
         with:
           p12-file-base64: ${{ secrets.MAC_CERT_BASE64 }}
           p12-password: ${{ secrets.MAC_CERT_PASSWORD }}
@@ -66,7 +66,7 @@ jobs:
           MAC_DEV_PASSWORD: ${{ secrets.MAC_DEV_PASSWORD }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload Aardium
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: mac_x64
           path: Aardium/dist/Aardium-Darwin-x64.tar.gz
@@ -75,7 +75,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:  
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Npm Install
         working-directory: Aardium
         run: npm install
@@ -83,7 +83,7 @@ jobs:
         working-directory: Aardium
         run: npm run dist:linux:x64
       - name: Upload Aardium
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: linux_x64
           path: Aardium/dist/Aardium-Linux-x64.tar.gz
@@ -92,7 +92,7 @@ jobs:
     runs-on: windows-latest
     steps:  
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Npm Install
         working-directory: Aardium
         run: npm install
@@ -100,7 +100,7 @@ jobs:
         working-directory: Aardium
         run: npm run dist:win32:x64
       - name: Upload Aardium
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: win32_x64
           path: Aardium/dist/Aardium-win32-x64
@@ -114,29 +114,29 @@ jobs:
     runs-on: windows-latest
     steps:  
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Download OSX dependencies (x64)
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: mac_x64
           path: Aardium/dist/Aardium-Darwin-x64.tar.gz
       - name: Download OSX dependencies (arm64)
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: mac_arm64
           path: Aardium/dist/Aardium-Darwin-arm64.tar.gz
       - name: Download Linux dependencies (x64)
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: linux_x64
           path: Aardium/dist/Aardium-Linux-x64.tar.gz
       - name: Download Windows dependencies (x64)
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: win32_x64
           path: Aardium\dist\Aardium-win32-x64
       - name: Install Dotnet
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
           global-json-file: global.json
       - name: Restore Tools
@@ -148,7 +148,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: dotnet aardpack src\Aardium.sln --notag
       - name: Upload Package
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: packages
           path: bin\pack
