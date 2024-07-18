@@ -1,3 +1,6 @@
+### 2.1.1-prerelease0002
+- [Bootstrap] Handle git commit hash in assembly version
+
 ### 2.1.1-prerelease0001
 * Updated to NET 8 and Aardvark.Base 5.3
 
