@@ -8,6 +8,7 @@ open System.Net.Http
 open System.Threading
 open System.Diagnostics
 open System.Runtime.InteropServices
+open System.Text.RegularExpressions
 open Microsoft.FSharp.Reflection
 open Aardvark.Base
 
@@ -209,8 +210,12 @@ module private Strings =
 
         asm.GetCustomAttributes(true)
         |> Array.tryPick (function
-            | :? System.Reflection.AssemblyInformationalVersionAttribute as att -> Some att.InformationalVersion
-            | _ -> None
+            | :? System.Reflection.AssemblyInformationalVersionAttribute as att ->
+                let regex = Regex("\\+[a-z0-9]+$")
+                Some <| regex.Replace(att.InformationalVersion, "")
+
+            | _ ->
+                None
         )
         |> Option.defaultWith (fun _ ->
             string <| asm.GetName().Version
