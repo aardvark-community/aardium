@@ -1,3 +1,6 @@
+### 2.1.2-prerelease0001
+- Potential fix for MacOS ARM64 crash
+
 ### 2.1.1
 - Updated to NET 8 and Aardvark.Base 5.3
 - [Bootstrap] Handle git commit hash in assembly version
