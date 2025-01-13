@@ -1,3 +1,6 @@
+### 2.1.2
+- Fixed crash on MacOS ARM64 due to missing entitlement
+
 ### 2.1.2-prerelease0002
 - Added com.apple.security.cs.allow-jit entitlement
 
