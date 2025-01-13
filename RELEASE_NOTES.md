@@ -1,3 +1,6 @@
+### 2.1.2-prerelease0002
+- Added com.apple.security.cs.allow-jit entitlement
+
 ### 2.1.2-prerelease0001
 - Potential fix for MacOS ARM64 crash
 
