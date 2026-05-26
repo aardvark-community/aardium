@@ -41,11 +41,7 @@ let main argv =
                 incremental = true
             }
 
-        let outputPath =
-            Path.combine [
-                Environment.GetFolderPath(System.Environment.SpecialFolder.Desktop)
-                "offler"
-            ]
+        let outputPath = "images"
 
         if not <| Directory.Exists outputPath then
             Directory.CreateDirectory outputPath |> ignore
@@ -77,6 +73,7 @@ let main argv =
             title "test"
             hideDock false // hide dock on mac
             log (fun msg -> Report.Line(2, $"[Aardium] %s{msg}"))
+            debug true
         }
 
     0 

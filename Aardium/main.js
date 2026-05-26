@@ -1,14 +1,13 @@
 require('@electron/remote/main').initialize()
-console.error(process.argv);
 
-const electron = require('electron')
-const app = electron.app
-const BrowserWindow = electron.BrowserWindow
+const electron = require('electron');
+const app = electron.app;
+const BrowserWindow = electron.BrowserWindow;
 const electronLocalShortcut = require('electron-localshortcut');
 
-const path = require('path')
-const getopt = require('node-getopt')
-const ws = require('nodejs-websocket')
+const path = require('path');
+const getopt = require('node-getopt');
+const { WebSocket, WebSocketServer } = require('ws');
 
 const availableOptions =
 [
@@ -139,9 +138,9 @@ function createMainWindow () {
 
   if (process.platform === 'darwin') {
     if (config.hideDock) {
-      electron.app.dock.hide();
+      app.dock.hide();
     }
-    electron.app.dock.setIcon(config.icon);
+    app.dock.setIcon(config.icon);
   }
 
   // and load the index.html of the app.
@@ -177,200 +176,209 @@ function createMainWindow () {
 }
 
 function runOffscreenServer(port) {
-    // process gets killed otherwise
-    const dummyWin = new BrowserWindow({ show: false, webPreferences: { offscreen: true, contextIsolation: false } })
-    const { SharedMemory } = require('node-shared-mem');
+  // process gets killed otherwise
+  const dummyWin = new BrowserWindow({ show: false, webPreferences: { offscreen: true, contextIsolation: false } })
+  const { SharedMemory } = require('node-shared-mem');
 
-    const server =
-        ws.createServer(function (conn) {
-            console.log("client connected");
+  const server = new WebSocketServer({ port: port });
 
-            let win = null;
-            let mapping = null;
-            let arr = null;
-            let connected = true;
-            let offset = 0;
-            let lastOffset = -1;
+  server.on('connection', function connection(ws) {
+    console.log("client connected");
 
-            function append(data) {
-                const oldOffset = offset;
-                const e = offset + data.byteLength;
-                if (e <= arr.byteLength) {
-                    arr.set(data, oldOffset);
-                    lastOffset = oldOffset;
-                    offset = e;
-                    return oldOffset
+    let win = null;
+    let mapping = null;
+    let arr = null;
+    let connected = true;
+    let offset = 0;
+    let lastOffset = -1;
+
+    function append(data) {
+      const oldOffset = offset;
+      const e = offset + data.byteLength;
+      if (e <= arr.byteLength) {
+        arr.set(data, oldOffset);
+        lastOffset = oldOffset;
+        offset = e;
+        return oldOffset
+      }
+      else {
+        arr.set(data, 0)
+        lastOffset = 0;
+        offset = data.byteLength;
+        return 0;
+      }
+    }
+
+    function close() {
+      if (connected) {
+        connected = false;
+        console.log("client disconnected");
+        if (win) try { win.close(); } catch { }
+        if (mapping) try { mapping.close(); } catch { }
+        mapping = null;
+        win = null
+      }
+    }
+
+    function command(cmd) {
+      switch (cmd.command) {
+        case "init":
+          if (mapping) mapping.close();
+          if (win) win.close();
+
+          mapping = new SharedMemory(cmd.mapName, cmd.mapSize);
+          win =
+            new BrowserWindow({
+              titleBarStyle: "hidden",
+              backgroundThrottling: false,
+              frame: false,
+              useContentSize: true,
+              show: false,
+              transparent: true,
+              webPreferences: { offscreen: true, devTools: true, contextIsolation: false },
+              width: cmd.width,
+              height: cmd.height
+            })
+
+          arr = new Uint8Array(mapping.buffer, 0);
+
+          win.setContentSize(cmd.width, cmd.height);
+          win.loadURL(cmd.url);
+          win.webContents.setFrameRate(60.0);
+
+          ws.send(JSON.stringify({ type: "initComplete" }));
+
+          win.webContents.on('cursor-changed', (e, typ) => {
+            if (!connected) return;
+            ws.send(JSON.stringify({ type: "changecursor", name: typ }));
+          });
+
+          win.focus();
+          const partialFrames = cmd.incremental || false;
+
+          win.webContents.on('paint', (event, dirty, image) => {
+            if (!connected) return;
+            const size = image.getSize();
+            if (partialFrames && dirty.width < size.width && dirty.height < size.height && lastOffset >= 0) {
+              const part = image.crop(dirty);
+              const bmp = part.toBitmap();
+              const partSize = part.getSize();
+
+              // update affected part in last frame
+              let srcIndex = 0
+              let dstIndex = lastOffset + 4 * (dirty.x + size.width * dirty.y);
+              const jy = 4 * (size.width - dirty.width)
+              for (y = 0; y < partSize.height; y++) {
+                for (x = 0; x < partSize.width; x++) {
+                  // BGRA
+                  arr[dstIndex++] = bmp[srcIndex++];
+                  arr[dstIndex++] = bmp[srcIndex++];
+                  arr[dstIndex++] = bmp[srcIndex++];
+                  arr[dstIndex++] = bmp[srcIndex++];
                 }
-                else {
-                    arr.set(data, 0)
-                    lastOffset = 0;
-                    offset = data.byteLength;
-                    return 0;
-                }
+                dstIndex += jy;
+              }
+
+              if (mapping.requiresCopy) {
+                mapping.copyTo(lastOffset, lastOffset, offset - lastOffset);
+              }
+
+              ws.send(
+                JSON.stringify({
+                  type: "partialframe",
+                  width: size.width,
+                  height: size.height,
+                  offset: lastOffset,
+                  byteLength: 0,
+                  dx: dirty.x,
+                  dy: dirty.y,
+                  dw: dirty.width,
+                  dh: dirty.height
+                })
+              );
             }
+            else {
+              // full image
+              const bmp = image.toBitmap();
+              const offset = append(bmp);
 
-            function close() {
-                if (connected) {
-                    connected = false;
-                    console.log("client disconnected");
-                    if (win) try { win.close(); } catch {}
-                    if (mapping) try { mapping.close(); } catch { }
-                    mapping = null;
-                    win = null
-                }
+              if (mapping.requiresCopy) {
+                mapping.copyTo(offset, offset, bmp.byteLength);
+              }
+
+              ws.send(
+                JSON.stringify({
+                  type: "fullframe",
+                  width: size.width,
+                  height: size.height,
+                  offset: offset,
+                  byteLength: bmp.byteLength
+                })
+              );
             }
+          })
+          break;
+        case "requestfullframe":
+          if (win) {
+            win.webContents.capturePage().then(function (image) {
+              if (!connected) return;
+              const size = image.getSize();
+              const bmp = image.toBitmap();
+              const offset = append(bmp);
+              ws.send(
+                JSON.stringify({
+                  type: "fullframe",
+                  width: size.width,
+                  height: size.height,
+                  offset: offset,
+                  byteLength: bmp.byteLength
+                })
+              );
+            }).catch((e) => { console.error(e); });
+          }
+          break;
+        case "opendevtools":
+          if (!win) return;
+          win.webContents.openDevTools({ mode: "detach" });
+          break;
+        case "resize":
+          if (win) win.setContentSize(cmd.width, cmd.height, false);
+          break;
+        case "inputevent":
+          win.webContents.sendInputEvent(cmd.event);
+          break;
+        case "setfocus":
+          if (cmd.focus) win.focus();
+          else win.blur();
+          break;
+        case "custom":
+          const f = new Function("win", "electron", "socket", cmd.js);
+          const res = f.call(win, win, electron, ws);
+          if (cmd.id) {
+            ws.send(JSON.stringify({ type: "result", id: cmd.id, result: res }));
+          }
+          break
+        default:
+          break;
+      }
+    }
 
-            function command(cmd) {
-                switch (cmd.command) {
-                    case "init":
-                        if (mapping) mapping.close();
-                        if (win) win.close();
-
-                        mapping = new SharedMemory(cmd.mapName, cmd.mapSize);
-                        win =
-                            new BrowserWindow({
-                                titleBarStyle: "hidden",
-                                backgroundThrottling: false,
-                                frame: false,
-                                useContentSize: true,
-                                show: false,
-                                transparent: true,
-                                webPreferences: { offscreen: true, devTools: true, contextIsolation: false },
-                                width: cmd.width,
-                                height: cmd.height
-                            })
-                        arr = new Uint8Array(mapping.buffer, 0);
-
-
-                        win.setContentSize(cmd.width, cmd.height);
-                        win.loadURL(cmd.url);
-                        win.webContents.setFrameRate(60.0);
-
-                        conn.send(JSON.stringify({ type: "initComplete" }));
-
-                        win.webContents.on('cursor-changed', (e, typ) => {
-                            if (!connected) return;
-                            conn.send(JSON.stringify({ type: "changecursor", name: typ }));
-                        });
-
-                        win.focus();
-                        const partialFrames = cmd.incremental || false;
-
-                        win.webContents.on('paint', (event, dirty, image) => {
-                            if (!connected) return;
-                            const size = image.getSize();
-                            if (partialFrames && dirty.width < size.width && dirty.height < size.height && lastOffset >= 0) {
-                                const part = image.crop(dirty);
-                                const bmp = part.toBitmap();
-                                const partSize = part.getSize();
-
-                                // update affected part in last frame
-                                let srcIndex = 0
-                                let dstIndex = lastOffset + 4 * (dirty.x + size.width * dirty.y);
-                                const jy = 4 * (size.width - dirty.width)
-                                for (y = 0; y < partSize.height; y++) {
-                                    for (x = 0; x < partSize.width; x++) {
-                                        // BGRA
-                                        arr[dstIndex++] = bmp[srcIndex++];
-                                        arr[dstIndex++] = bmp[srcIndex++];
-                                        arr[dstIndex++] = bmp[srcIndex++];
-                                        arr[dstIndex++] = bmp[srcIndex++];
-                                    }
-                                    dstIndex += jy;
-                                }
-
-                                conn.send(
-                                    JSON.stringify({
-                                        type: "partialframe",
-                                        width: size.width,
-                                        height: size.height,
-                                        offset: lastOffset,
-                                        byteLength: 0,
-                                        dx: dirty.x,
-                                        dy: dirty.y,
-                                        dw: dirty.width,
-                                        dh: dirty.height
-                                    })
-                                );
-                            }
-                            else {
-                                // full image
-                                const bmp = image.toBitmap();
-                                const offset = append(bmp);
-                                conn.send(
-                                    JSON.stringify({
-                                        type: "fullframe",
-                                        width: size.width,
-                                        height: size.height,
-                                        offset: offset,
-                                        byteLength: bmp.byteLength
-                                    })
-                                );
-                            }
-                        })
-                        break;
-                    case "requestfullframe":
-                        if (win) {
-                            win.webContents.capturePage().then(function (image) {
-                                if (!connected) return;
-                                const size = image.getSize();
-                                const bmp = image.toBitmap();
-                                const offset = append(bmp);
-                                conn.send(
-                                    JSON.stringify({
-                                        type: "fullframe",
-                                        width: size.width,
-                                        height: size.height,
-                                        offset: offset,
-                                        byteLength: bmp.byteLength
-                                    })
-                                );
-                            }).catch((e) => { console.error(e); });
-                        }
-                        break;
-                    case "opendevtools":
-                        if (!win) return;
-                        win.webContents.openDevTools({ mode: "detach" });
-                        break;
-                    case "resize":
-                        if(win) win.setContentSize(cmd.width, cmd.height, false);
-                        break;
-                    case "inputevent":
-                        win.webContents.sendInputEvent(cmd.event);
-                        break;
-                    case "setfocus":
-                        if (cmd.focus) win.focus();
-                        else win.blur();
-                        break;
-                    case "custom":
-                        const f = new Function("win", "electron", "socket", cmd.js);
-                        const res = f.call(win, win, electron, conn);
-                        if (cmd.id) {
-                            conn.send(JSON.stringify({ type: "result", id: cmd.id, result: res }));
-                        }
-                        break
-                    default:
-                        break;
-                }
-            }
-
-            conn.on("error", function (err) { close(); });
-            conn.on("close", function (code, reason) { close(); })
-            conn.on("text", function (str) {
-                try {
-                    const cmd = JSON.parse(str);
-                    if (cmd.command) command(cmd);
-                    else console.warn("bad command", cmd);
-                } catch(err) {
-                    console.error("bad command (not JSON)", str, err);
-                }
-            });
-        });
-
-    server.on("error", function (err) {
-        console.error(err);
+    ws.on("error", function (err) { close(); });
+    ws.on("close", function (code, reason) { close(); })
+    ws.on("message", function (str) {
+      try {
+        const cmd = JSON.parse(str);
+        if (cmd.command) command(cmd);
+        else console.warn("bad command", cmd);
+      } catch (err) {
+        console.error("bad command (not JSON)", str, err);
+      }
     });
-    server.listen(port, "127.0.0.1");
+  });
+
+  server.on("error", function (err) {
+    console.error(err);
+  });
 }
 
 function ready() {
@@ -380,7 +388,7 @@ function ready() {
   } else {
     // Apply some settings in the window-created-callback, so
     // they are also applied to windows opened via window.open() from the renderer.
-    electron.app.on('browser-window-created', function(_, window) {
+    app.on('browser-window-created', function(_, window) {
       require("@electron/remote/main").enable(window.webContents);
 
       if (config.multiwindow && mainWindow instanceof BrowserWindow) {
