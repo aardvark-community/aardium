@@ -172,7 +172,7 @@ function createMainWindow () {
   }
 
   if (config.maximize && !config.fullscreen) mainWindow.maximize();
-  mainWindow.show();
+  mainWindow.once('ready-to-show', () => { mainWindow.show(); });
 }
 
 function runOffscreenServer(port) {
