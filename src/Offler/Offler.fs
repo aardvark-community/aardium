@@ -285,9 +285,7 @@ type Offler internal(ws : WebSocket, shared : ISharedMemory, incremental : bool,
     static let getServer() =
         lock serverLock (fun () ->
             if serverRefCount = 0 then
-                let newServer =
-                    Aardium.startOffscreenServer 0 <| fun isError message -> 
-                        logger isError message
+                let newServer = Aardium.StartOffscreenServer (fun isError message -> logger isError message)
                 server <- newServer
                 serverRefCount <- 1
                 newServer
@@ -395,10 +393,10 @@ type Offler internal(ws : WebSocket, shared : ISharedMemory, incremental : bool,
         )
 
     static member Init() =
-        Aardium.init()
+        Aardium.Init()
 
     static member Init(path : string) =
-        Aardium.initAt path
+        Aardium.Init path
 
     static member Logger 
         with get() = logger

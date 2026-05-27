@@ -91,7 +91,7 @@ module private Tools =
         try
             use c = new HttpClient()
 
-            let response = c.GetAsync(System.Uri url, HttpCompletionOption.ResponseHeadersRead).Result
+            let response = c.GetAsync(Uri url, HttpCompletionOption.ResponseHeadersRead).Result
             let len =
                 let f = response.Content.Headers.ContentLength
                 if f.HasValue then f.Value
@@ -103,7 +103,7 @@ module private Tools =
 
             let mutable lastProgress = Progress(0L,len)
             progress lastProgress
-            let sw = System.Diagnostics.Stopwatch.StartNew()
+            let sw = Stopwatch.StartNew()
 
             use stream = response.Content.ReadAsStreamAsync().Result
             if File.Exists file then File.Delete file
@@ -186,7 +186,7 @@ module private ElectronProcess =
 
         try
             while true do
-                let (str, error) = log.Take(cancel.Token)
+                let str, error = log.Take(cancel.Token)
                 logger error str
 
         with :? OperationCanceledException ->
@@ -303,7 +303,7 @@ type AardiumConfig =
         /// Open external URLs in Aardium rather than the default browser. Default is false.
         openExternalUrls : bool
 
-        /// Hide the application icon in the MacOS dock. Default is false.
+        /// Hide the application icon in the macOS dock. Default is false.
         hideDock         : bool
 
         /// Enable experimental Webkit features. Default is false.
@@ -425,137 +425,179 @@ type AardiumOffscreenServer internal (proc : Process, port : int) =
             proc.Dispose()
             disposed <- true
 
-    interface System.IDisposable with
+    interface IDisposable with
         member x.Dispose() = x.Dispose()
 
-module Aardium =
-    let mutable private binaryPath = ""
+[<AbstractClass; Sealed>]
+type Aardium =
+    static let initLock = obj()
+    static let mutable binaryPath = ""
 
-    /// Returns whether Aardium has been successfully initialized.
-    let isInitialized() =
-        not (String.IsNullOrWhiteSpace binaryPath) && File.Exists binaryPath
-
-    let private findBinary (path : string) =
+    static let findBinary (path: string) =
         Strings.binaryPaths |> Array.tryPick (fun p ->
             let p = Path.Combine(path, p)
             if File.Exists p then Some p else None
         )
         |> Option.defaultValue ""
 
+    /// Returns whether Aardium has been successfully initialized.
+    static member IsInitialized =
+        lock initLock (fun _ ->
+            not (String.IsNullOrWhiteSpace binaryPath) && File.Exists binaryPath
+        )
+
+    /// <summary>
     /// Initializes Aardium in the given directory.
     /// If the binary cannot be found, it is retrieved from nuget.org.
-    let initAt (path : string) =
-        Report.BeginTimed("Initializing Aardium")
+    /// If the given path is null or empty, it defaults to AppData/Local/Aardium on Windows and ~/.local/share/Aardium on Linux / macOS.
+    /// </summary>
+    /// <param name="path">Path of the directory used by Aardium. If null or empty, a default directory is used instead.</param>
+    static member Init([<Optional; DefaultParameterValue(null: string)>] path: string) =
+        lock initLock (fun _ ->
+            Report.BeginTimed("Initializing Aardium")
 
-        if not <| isInitialized() then
-            let mutable path = path
+            if not Aardium.IsInitialized then
+                let mutable path = path
 
-            if String.IsNullOrWhiteSpace path then
-                path <- Strings.defaultCachePath
+                if String.IsNullOrWhiteSpace path then
+                    path <- Strings.defaultCachePath
 
-            path <- Path.GetFullPath path
-            binaryPath <- findBinary path
+                path <- Path.GetFullPath path
+                binaryPath <- findBinary path
 
-            if not <| isInitialized() then
-                // Ensure we have a directory to work in (i.e. write access)
-                try
-                    Directory.create true path
-                with _ ->
-                    if path <> Strings.defaultCachePath then
-                        Report.Warn($"Failed to create or use directory '%s{path}' with write access, falling back to '%s{Strings.defaultCachePath}'")
-                        path <- Strings.defaultCachePath
+                if not Aardium.IsInitialized then
+                    // Ensure we have a directory to work in (i.e. write access)
+                    try
                         Directory.create true path
-                    else
-                        failf "Failed to create or use directory '%s' with write access." path
+                    with _ ->
+                        if path <> Strings.defaultCachePath then
+                            Report.Warn($"Failed to create or use directory '%s{path}' with write access, falling back to '%s{Strings.defaultCachePath}'")
+                            path <- Strings.defaultCachePath
+                            Directory.create true path
+                        else
+                            failf "Failed to create or use directory '%s' with write access." path
 
-                // Download nupkg
-                let nupkgPath =
-                    Path.Combine(path, $"%s{Strings.packageName}-%s{Strings.version}.nupkg")
+                    // Download nupkg
+                    let nupkgPath =
+                        Path.Combine(path, $"%s{Strings.packageName}-%s{Strings.version}.nupkg")
 
-                Report.Begin($"Downloading from {Strings.packageUrl}")
-                Report.Progress 0.0
+                    Report.Begin($"Downloading from {Strings.packageUrl}")
+                    Report.Progress 0.0
 
-                try
-                    (Strings.packageUrl, nupkgPath) ||> Tools.download (fun p ->
-                        Report.Progress p.Relative
-                    )
-                with _ ->
-                    Report.End(" - failed") |> ignore
-                    reraise()
+                    try
+                        (Strings.packageUrl, nupkgPath) ||> Tools.download (fun p ->
+                            Report.Progress p.Relative
+                        )
+                    with _ ->
+                        Report.End(" - failed") |> ignore
+                        reraise()
 
-                Report.Progress 1.0
-                Report.End() |> ignore
+                    Report.Progress 1.0
+                    Report.End() |> ignore
 
-                Report.BeginTimed("Extracting")
+                    Report.BeginTimed("Extracting")
 
-                // Extract (for non-Windows we have to extract the contained tar.gz as well)
-                let finalPath = Path.Combine(path, Strings.architecture, Strings.version)
+                    // Extract (for non-Windows we have to extract the contained tar.gz as well)
+                    let finalPath = Path.Combine(path, Strings.architecture, Strings.version)
 
-                try
-                    Directory.create false finalPath
-                    Tools.unzip nupkgPath finalPath
+                    try
+                        Directory.create false finalPath
+                        Tools.unzip nupkgPath finalPath
 
-                    binaryPath <- findBinary path
+                        binaryPath <- findBinary path
 
-                    match Strings.platform with
-                    | Strings.Platform.Linux | Strings.Platform.Darwin when not <| isInitialized() ->
-                        let toolsPath = Path.Combine(finalPath, "tools")
-                        let tarPath = Path.Combine(toolsPath, $"Aardium-%s{Strings.platform}-%s{Strings.architecture}.tar.gz")
+                        match Strings.platform with
+                        | Strings.Platform.Linux | Strings.Platform.Darwin when not Aardium.IsInitialized ->
+                            let toolsPath = Path.Combine(finalPath, "tools")
+                            let tarPath = Path.Combine(toolsPath, $"Aardium-%s{Strings.platform}-%s{Strings.architecture}.tar.gz")
 
-                        if File.Exists tarPath then
-                            Tools.untar tarPath toolsPath
-                            binaryPath <- findBinary path
+                            if File.Exists tarPath then
+                                Tools.untar tarPath toolsPath
+                                binaryPath <- findBinary path
 
-                            try File.Delete tarPath
-                            with _ -> ()
-                    | _ ->
-                        ()
+                                try File.Delete tarPath
+                                with _ -> ()
+                        | _ ->
+                            ()
 
-                    if not <| isInitialized() then
-                        failf "Could not find binary after extracting to '%s'." finalPath
+                        if not Aardium.IsInitialized then
+                            failf "Could not find binary after extracting to '%s'." finalPath
 
-                finally
-                    Report.EndTimed() |> ignore
-                    try File.Delete nupkgPath
-                    with _ -> ()
+                    finally
+                        Report.EndTimed() |> ignore
+                        try File.Delete nupkgPath
+                        with _ -> ()
 
-        Report.Line($"Binary: {binaryPath}")
-        Report.EndTimed() |> ignore
+            Report.Line($"Binary: {binaryPath}")
+            Report.EndTimed() |> ignore
+        )
 
-    /// Initializes Aardium in the default cache location.
-    /// If the binary cannot be found, it is retrieved from nuget.org.
-    /// The default location is AppData/Local/Aardium on Windows and ~/.local/share/Aardium on Linux / MacOS.
-    let init() =
-        initAt null
-
-    [<Obsolete("Use Aardium.initAt instead.")>]
-    let initPath (path : string) =
-        initAt path
-
-    let runConfig (cfg : AardiumConfig)  =
-        if isInitialized() then
+    /// <summary>
+    /// Runs Aardium with the given configuration.
+    /// </summary>
+    /// <param name="cfg">Aardium configuration.</param>
+    /// <exception cref="InvalidOperationException">if Aardium has not been initialized.</exception>
+    static member Run (cfg: AardiumConfig)  =
+        if Aardium.IsInitialized then
             ElectronProcess.exec binaryPath cfg.log (AardiumConfig.toArgs cfg)
         else
             raise <| InvalidOperationException("Aardium has not been initialized.")
 
-    let startOffscreenServer (port : int) (logger : bool -> string -> unit) =
-        let port =
-            if port <> 0 then
-                port
-            else
-                let l = System.Net.Sockets.TcpListener(IPAddress.Loopback, 0)
-                l.Start()
-                let p = l.LocalEndpoint |> unbox<System.Net.IPEndPoint>
-                let port = p.Port
-                l.Stop()
-                port
+    /// <summary>
+    /// Starts a local Aardium offscreen server.
+    /// </summary>
+    /// <param name="logger">Logging callback for server messages.</param>
+    /// <param name="port">Port of the server, or 0 for an automatically assigned port.</param>
+    static member StartOffscreenServer (logger: bool -> string -> unit, [<Optional; DefaultParameterValue(0)>] port: int) =
+        if Aardium.IsInitialized then
+            let port =
+                if port <> 0 then
+                    port
+                else
+                    let l = System.Net.Sockets.TcpListener(IPAddress.Loopback, 0)
+                    l.Start()
+                    try
+                        let p = l.LocalEndpoint |> unbox<IPEndPoint>
+                        p.Port
+                    finally
+                        l.Stop()
 
-        if isInitialized() then
-            logger false (sprintf "starting server with port %d" port)
+            logger false $"Starting server with port {port}"
             let proc = ElectronProcess.start binaryPath logger [|sprintf "--server=%d" port|]
             new AardiumOffscreenServer(proc, port)
         else
             raise <| InvalidOperationException("Aardium has not been initialized.")
+
+    /// <summary>
+    /// Starts a local Aardium offscreen server.
+    /// </summary>
+    /// <param name="port">Port of the server, or 0 for an automatically assigned port.</param>
+    static member StartOffscreenServer ([<Optional; DefaultParameterValue(0)>] port: int) =
+        let logger = fun _ _ -> ()
+        Aardium.StartOffscreenServer(logger, port)
+
+    [<Obsolete("Use Aardium.IsInitialized instead.")>]
+    static member isInitialized() =
+        not (String.IsNullOrWhiteSpace binaryPath) && File.Exists binaryPath
+
+    [<Obsolete("Use Aardium.Init() instead.")>]
+    static member initAt (path : string) =
+        Aardium.Init path
+
+    [<Obsolete("Use Aardium.Init() instead.")>]
+    static member init() =
+        Aardium.Init()
+
+    [<Obsolete("Use Aardium.Run() instead.")>]
+    static member runConfig (cfg : AardiumConfig)  =
+        Aardium.Run cfg
+
+    [<Obsolete("Use Aardium.StartOffscreenServer instead.")>]
+    static member startOffscreenServer (port : int) (logger : bool -> string -> unit) =
+        Aardium.StartOffscreenServer(logger, port)
+
+[<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
+module Aardium =
 
     type AardiumBuilder() =
         member x.Yield(()) = AardiumConfig.empty
@@ -629,8 +671,8 @@ module Aardium =
         /// Initial window size.
         [<CustomOperation("size")>]
         member inline x.Size(cfg : AardiumConfig, s : ^Size) =
-            let w = (^Size: (member P_X : int)(s))
-            let h = (^Size: (member P_Y : int)(s))
+            let w = (^Size: (member P_X : int)s)
+            let h = (^Size: (member P_Y : int)s)
             { cfg with width = Some w; height = Some h }
 
         /// Minimum window width.
@@ -646,8 +688,8 @@ module Aardium =
         /// Minimum window size.
         [<CustomOperation("minSize")>]
         member inline x.MinSize(cfg : AardiumConfig, s : ^Size) =
-            let w = (^Size: (member P_X : int)(s))
-            let h = (^Size: (member P_Y : int)(s))
+            let w = (^Size: (member P_X : int)s)
+            let h = (^Size: (member P_Y : int)s)
             { cfg with minWidth = Some w; minHeight = Some h }
 
         /// Enable debug / developer tools.
@@ -675,7 +717,7 @@ module Aardium =
         member x.OpenExternalUrls(cfg : AardiumConfig, v : bool) =
             { cfg with openExternalUrls = v }
 
-        /// Hide the application icon in the MacOS dock.
+        /// Hide the application icon in the macOS dock.
         [<CustomOperation("hideDock")>]
         member x.HideDock(cfg : AardiumConfig, v : bool) =
             { cfg with hideDock = v }
@@ -701,6 +743,6 @@ module Aardium =
             { cfg with log = fun _ -> log }
 
         member x.Run(cfg : AardiumConfig) =
-            runConfig cfg
+            Aardium.Run cfg
 
     let run = AardiumBuilder()

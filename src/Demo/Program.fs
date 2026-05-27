@@ -24,7 +24,8 @@ let main argv =
         else
             raise <| NotSupportedException $"Unsupported platform: {RuntimeInformation.OSDescription}"
 
-    Aardium.initAt <| Path.Combine(__SOURCE_DIRECTORY__, "..", "..", "Aardium", "dist", distFolder)
+    let path = Path.Combine(__SOURCE_DIRECTORY__, "..", "..", "Aardium", "dist", distFolder)
+    Aardium.Init path
 
     let offler = false
 

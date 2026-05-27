@@ -17,4 +17,4 @@ bin/*
 !bin/*.template
 /node_modules/.yarn-integrity
 **/.idea
-*.DotSettings.User
+*.DotSettings.user

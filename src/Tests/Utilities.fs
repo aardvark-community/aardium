@@ -35,7 +35,7 @@ module Utilities =
             if not <| Directory.Exists path then
                 raise <| DirectoryNotFoundException($"Aardium not found: {path}")
 
-            Aardium.initAt <| Path.Combine(__SOURCE_DIRECTORY__, "..", "..", "Aardium", "dist", folderName)
+            Aardium.Init (Path.Combine(__SOURCE_DIRECTORY__, "..", "..", "Aardium", "dist", folderName))
 
     module Offler =
 
