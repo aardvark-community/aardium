@@ -18,8 +18,8 @@ let main argv =
         elif RuntimeInformation.IsOSPlatform OSPlatform.Linux then "Aardium-linux-x64"
         elif RuntimeInformation.IsOSPlatform OSPlatform.OSX then
             match RuntimeInformation.ProcessArchitecture with
-            | Architecture.X64 -> "mac"
-            | Architecture.Arm64 -> "mac-arm64"
+            | Architecture.X64 -> "Aardium-darwin-x64"
+            | Architecture.Arm64 -> "Aardium-darwin-arm64"
             | arch -> raise <| NotSupportedException $"Unsupported architecture: {arch}"
         else
             raise <| NotSupportedException $"Unsupported platform: {RuntimeInformation.OSDescription}"
