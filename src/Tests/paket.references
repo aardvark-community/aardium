@@ -1,0 +1,6 @@
+FSharp.Core
+Aardvark.PixImage.ImageSharp
+Expecto
+Expecto.FsCheck
+YoloDev.Expecto.TestSdk
+Microsoft.NET.Test.Sdk 

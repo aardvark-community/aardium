@@ -452,6 +452,8 @@ type Offler internal(ws : WebSocket, shared : ISharedMemory, incremental : bool,
         if isDisposed then 1
         else height
 
+    member _.Incremental = incremental
+
     member x.LastImage = 
         if isDisposed then PixImage<byte>(Col.Format.RGBA, V2i.II)
         else lastImage

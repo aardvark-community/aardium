@@ -20,14 +20,13 @@ let main argv =
             match RuntimeInformation.ProcessArchitecture with
             | Architecture.X64 -> "mac"
             | Architecture.Arm64 -> "mac-arm64"
-            | _ -> failwith "bad architecture"
+            | arch -> raise <| NotSupportedException $"Unsupported architecture: {arch}"
         else
-            failwith "bad platform"
+            raise <| NotSupportedException $"Unsupported platform: {RuntimeInformation.OSDescription}"
 
     Aardium.initAt <| Path.Combine(__SOURCE_DIRECTORY__, "..", "..", "Aardium", "dist", distFolder)
-    //Aardium.init()
 
-    let offler = true
+    let offler = false
 
     if offler then
         Offler.Logger <- fun _ msg ->
