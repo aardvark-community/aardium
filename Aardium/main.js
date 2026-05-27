@@ -372,10 +372,20 @@ function runOffscreenServer(port) {
     ws.on("message", function (str) {
       try {
         const cmd = JSON.parse(str);
-        if (cmd.command) command(cmd);
-        else console.warn("bad command", cmd);
+        if (cmd.command) {
+          try {
+            command(cmd);
+          } catch (err) {
+            console.error(`Error when processing command '${cmd.command}'.`, err);
+            ws.send(err.toString());
+          }
+        } else {
+          console.warn(`Bad command '${cmd}'`);
+          ws.send(`Bad command '${cmd}'`);
+        }
       } catch (err) {
-        console.error("bad command (not JSON)", str, err);
+        console.error(`Failed to parse message '${str}'.`, err);
+        ws.send(err.toString());
       }
     });
   });

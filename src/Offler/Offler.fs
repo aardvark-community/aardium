@@ -622,11 +622,11 @@ type Offler internal(ws : WebSocket, shared : ISharedMemory, incremental : bool,
                 info.height
                 info.url
 
-        ws.Send command |> Async.RunSynchronously
-        let reply = ws.ReceiveString() |> Async.RunSynchronously
+        Async.RunSynchronously(ws.Send command, timeout = 10000)
+        let reply = Async.RunSynchronously(ws.ReceiveString(), timeout = 10000)
         match Message.unpickle reply with
         | InitComplete ->
             new Offler(ws, mapping, info.incremental, info.url, info.width, info.height)
         | _ ->
-            failwithf "initialization failed: %A" reply
+            failwithf "[Offler] Initialization failed. %s" reply
             new Offler(ws, mapping, info.incremental, info.url, info.width, info.height)
