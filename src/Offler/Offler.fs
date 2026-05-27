@@ -285,9 +285,37 @@ type Offler internal(ws : WebSocket, shared : ISharedMemory, incremental : bool,
     static let getServer() =
         lock serverLock (fun () ->
             if serverRefCount = 0 then
-                let newServer = Aardium.StartOffscreenServer (fun isError message -> logger isError message)
+                let mutable isReady = false
+                let readyLock = obj()
+
+                let logCallback isError message =
+                    if not isReady && String.contains "SERVER_READY" message then
+                        lock readyLock (fun _ ->
+                            isReady <- true
+                            Monitor.Pulse readyLock
+                        )
+
+                    logger isError message
+
+                let newServer = Aardium.StartOffscreenServer logCallback
                 server <- newServer
                 serverRefCount <- 1
+
+                logger false "Waiting for server..."
+
+                lock readyLock (fun _ ->
+                    while not isReady do
+                        try
+                            if not <| Monitor.Wait(readyLock, TimeSpan.FromSeconds 10) then
+                                Log.warn "[Offler] Timed out waiting for server"
+                                isReady <- true
+                        with exn ->
+                            Log.error $"[Offler] Error while waiting for server: {exn}"
+                            isReady <- true
+                )
+
+                logger false "Server is ready"
+
                 newServer
             else
                 serverRefCount <- serverRefCount + 1

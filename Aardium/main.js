@@ -182,8 +182,12 @@ function runOffscreenServer(port) {
 
   const server = new WebSocketServer({ port: port });
 
+  server.on('listening', () => {
+    console.log("SERVER_READY"); 
+  });
+
   server.on('connection', function connection(ws) {
-    console.log("client connected");
+    console.log("Client connected");
 
     let win = null;
     let mapping = null;
@@ -212,7 +216,7 @@ function runOffscreenServer(port) {
     function close() {
       if (connected) {
         connected = false;
-        console.log("client disconnected");
+        console.log("Client disconnected");
         if (win) try { win.close(); } catch { }
         if (mapping) try { mapping.close(); } catch { }
         mapping = null;

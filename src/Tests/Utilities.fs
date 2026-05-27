@@ -45,6 +45,8 @@ module Utilities =
         let start incremental url =
             Aardium.initLocal()
 
+            Offler.Logger <- fun _ message -> Log.line $"[Offler] {message}"
+
             new Offler {
                 url = url
                 width = width
