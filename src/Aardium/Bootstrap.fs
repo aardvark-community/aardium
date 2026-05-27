@@ -139,35 +139,30 @@ module private ElectronProcess =
         t.Start()
 
     let start (file : string) (logger : bool -> string -> unit) (args : string[]) =
-        let info =
-            ProcessStartInfo(
-                file,
-                Arguments = String.concat " " args,
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true
-            )
+        let p = new Process()
+        p.StartInfo.FileName <- file
+        p.StartInfo.Arguments <- String.concat " " args
+        p.StartInfo.UseShellExecute <- false
+        p.StartInfo.RedirectStandardOutput <- true
+        p.StartInfo.RedirectStandardError <- true
+        p.StartInfo.EnvironmentVariables.["ELECTRON_ENABLE_LOGGING"] <- "1"
+        p.StartInfo.Environment.["ELECTRON_ENABLE_LOGGING"] <- "1"
 
-        info.EnvironmentVariables.["ELECTRON_ENABLE_LOGGING"] <- "1"
-        info.Environment.["ELECTRON_ENABLE_LOGGING"] <- "1"
-
-        let proc = Process.Start(info)
-        FSys.Process.attachChild proc
-
-        proc.OutputDataReceived.Add (fun e ->
+        p.OutputDataReceived.Add (fun e ->
             if not (String.IsNullOrWhiteSpace e.Data) then
                 logger false e.Data
         )
 
-        proc.ErrorDataReceived.Add (fun e ->
+        p.ErrorDataReceived.Add (fun e ->
             if not (String.IsNullOrWhiteSpace e.Data) then
                 logger true e.Data
         )
 
-        proc.BeginOutputReadLine()
-        proc.BeginErrorReadLine()
+        p.Start() |> ignore
+        p.BeginOutputReadLine()
+        p.BeginErrorReadLine()
 
-        proc
+        p
 
     let exec (file : string) (logger : bool -> string -> unit) (args : string[]) =
         use log = new System.Collections.Concurrent.BlockingCollection<string * bool>()

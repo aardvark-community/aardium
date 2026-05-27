@@ -4,7 +4,6 @@ storage: none
 
 nuget FSharp.Core                           >= 8.0.0 lowest_matching:true
 nuget Newtonsoft.Json                       >= 13.0.3 lowest_matching:true
-nuget FSys                                  ~> 0.0.1
 nuget Aardvark.Build                        ~> 2.0.7
 nuget Aardvark.Base                         ~> 5.3.23
 nuget Aardvark.Base.Tensors                 ~> 5.3.23
