@@ -18,9 +18,9 @@ jobs:
       latest_release_version: ${{ steps.compare.outputs.latest_release_version }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Install Dotnet
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           global-json-file: global.json
       - name: Restore Tools
@@ -91,12 +91,18 @@ jobs:
     name: OSX (arm64)
     needs: release-check
     if: needs.release-check.outputs.should_publish == 'true'
-    runs-on: macos-latest
+    runs-on: macos-14
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
+      - name: Install Dotnet
+        uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+      - name: Restore Dotnet Tools
+        run: dotnet tool restore
       - name: Install Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11.8'
       - name: Add Cert to Keychain
@@ -107,7 +113,7 @@ jobs:
       - name: Npm Install
         working-directory: Aardium
         run: npm install
-      - name: Package
+      - name: Npm Build
         working-directory: Aardium
         run: npm run build:darwin:arm64
         env:
@@ -115,8 +121,14 @@ jobs:
           MAC_CERT_PASSWORD: ${{ secrets.MAC_CERT_PASSWORD }}
           MAC_DEV_PASSWORD: ${{ secrets.MAC_DEV_PASSWORD }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Restore Paket
+        run: dotnet paket restore
+      - name: Dotnet Build
+        run: dotnet build -c Release src/Aardium.sln
+      - name: Dotnet Test
+        run: dotnet test src/Aardium.sln -c Release --no-build --nologo --logger:"console;verbosity=normal"
       - name: Upload Aardium
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: mac_arm64
           path: Aardium/dist/Aardium-Darwin-arm64.tar.gz
@@ -124,12 +136,18 @@ jobs:
     name: OSX (x64)
     needs: release-check
     if: needs.release-check.outputs.should_publish == 'true'
-    runs-on: macos-latest
+    runs-on: macos-15-intel
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
+      - name: Install Dotnet
+        uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+      - name: Restore Dotnet Tools
+        run: dotnet tool restore
       - name: Install Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11.8'
       - name: Add Cert to Keychain
@@ -140,7 +158,7 @@ jobs:
       - name: Npm Install
         working-directory: Aardium
         run: npm install
-      - name: Package
+      - name: Npm Build
         working-directory: Aardium
         run: npm run build:darwin:x64
         env:
@@ -148,8 +166,14 @@ jobs:
           MAC_CERT_PASSWORD: ${{ secrets.MAC_CERT_PASSWORD }}
           MAC_DEV_PASSWORD: ${{ secrets.MAC_DEV_PASSWORD }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Restore Paket
+        run: dotnet paket restore
+      - name: Dotnet Build
+        run: dotnet build -c Release src/Aardium.sln
+      - name: Dotnet Test
+        run: dotnet test src/Aardium.sln -c Release --no-build --nologo --logger:"console;verbosity=normal"
       - name: Upload Aardium
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: mac_x64
           path: Aardium/dist/Aardium-Darwin-x64.tar.gz
@@ -157,18 +181,30 @@ jobs:
     name: Linux (x64)
     needs: release-check
     if: needs.release-check.outputs.should_publish == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:  
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
+      - name: Install Dotnet
+        uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+      - name: Restore Dotnet Tools
+        run: dotnet tool restore
       - name: Npm Install
         working-directory: Aardium
         run: npm install
-      - name: Package
+      - name: Npm Build
         working-directory: Aardium
         run: npm run build:linux:x64
+      - name: Restore Paket
+        run: dotnet paket restore
+      - name: Dotnet Build
+        run: dotnet build -c Release src/Aardium.sln
+      - name: Dotnet Test
+        run: xvfb-run --auto-servernum dotnet test src/Aardium.sln -c Release --no-build --nologo --logger:"console;verbosity=normal"
       - name: Upload Aardium
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: linux_x64
           path: Aardium/dist/Aardium-Linux-x64.tar.gz
@@ -176,18 +212,31 @@ jobs:
     name: Windows (x64)
     needs: release-check
     if: needs.release-check.outputs.should_publish == 'true'
-    runs-on: windows-latest
+    runs-on: windows-2022
     steps:  
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
+      - name: Install Dotnet
+        uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+      - name: Restore Dotnet Tools
+        run: dotnet tool restore
       - name: Npm Install
         working-directory: Aardium
         run: npm install
-      - name: Package
+      - name: Npm Build
         working-directory: Aardium
         run: npm run build:win32:x64
+      - name: Restore Paket
+        run: dotnet paket restore
+      - name: Dotnet Build
+        shell: cmd
+        run: dotnet build -c Release src\Aardium.sln
+      - name: Dotnet Test
+        run: dotnet test src\Aardium.sln -c Release --no-build --nologo --logger:"console;verbosity=normal"
       - name: Upload Aardium
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: win32_x64
           path: Aardium/dist/Aardium-win32-x64
@@ -199,31 +248,31 @@ jobs:
       - win32_x64
       - linux_x64
     runs-on: windows-latest
-    steps:  
+    steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Download OSX dependencies (x64)
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: mac_x64
           path: Aardium/dist/Aardium-Darwin-x64.tar.gz
       - name: Download OSX dependencies (arm64)
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: mac_arm64
           path: Aardium/dist/Aardium-Darwin-arm64.tar.gz
       - name: Download Linux dependencies (x64)
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: linux_x64
           path: Aardium/dist/Aardium-Linux-x64.tar.gz
       - name: Download Windows dependencies (x64)
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: win32_x64
           path: Aardium\dist\Aardium-win32-x64
       - name: Install Dotnet
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           global-json-file: global.json
       - name: Restore Tools
@@ -235,7 +284,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: dotnet aardpack src\Aardium.sln --notag
       - name: Upload Package
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: packages
           path: bin\pack
