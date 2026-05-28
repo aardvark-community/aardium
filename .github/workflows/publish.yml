@@ -5,7 +5,7 @@ on:
       - master
     paths:
       - RELEASE_NOTES.md
-      - .github/workflows/pack.yml
+      - .github/workflows/publish.yml
 jobs:
   release-check:
     name: Check release version
