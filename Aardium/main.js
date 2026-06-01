@@ -29,7 +29,8 @@ const availableOptions =
   [''  , 'frameless'              , 'frameless window'],
   [''  , 'woptions=ARG'           , 'BrowserWindow options'],
   [''  , 'server=port'            , 'run server for offscreen rendering' ],
-  [''  , 'open-external-urls'     , 'open external URLs in Aardium rather than the default browser']
+  [''  , 'open-external-urls'     , 'open external URLs in Aardium rather than the default browser'],
+  [''  , 'parent-pid=ARG'         , 'id of the parent process, Aardium will automatically terminate if the parent process stops running or crashes']
 ];
 
 const defaultIcon =
@@ -61,6 +62,8 @@ const config = {
 function parseOptions(argv) {
   const args = (!argv) ? [] : argv;
   const opt = getopt.create(availableOptions).bindHelp().parse(args).options;
+
+  if (opt['parent-pid']) config.parentPid = parseInt(opt['parent-pid']);
 
   if (opt.server) {
     config.server = opt.server;
@@ -486,6 +489,18 @@ function ready() {
 // See: https://www.electronjs.org/docs/latest/tutorial/performance#8-call-menusetapplicationmenunull-when-you-do-not-need-a-default-menu
 parseOptions(process.argv);
 if (!config.menu) electron.Menu.setApplicationMenu(null)
+
+// Make sure Aardium exits when the parent process crashes or terminates.
+if (config.parentPid) {
+    const monitorInterval = setInterval(() => {
+      try {
+        process.kill(config.parentPid, 0);
+      } catch {
+        clearInterval(monitorInterval);
+        app.exit(0);
+      }
+    }, 500);
+}
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.

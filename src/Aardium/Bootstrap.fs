@@ -139,6 +139,8 @@ module private ElectronProcess =
         t.Start()
 
     let start (file : string) (logger : bool -> string -> unit) (args : string[]) =
+        let args = Array.append args [| $"--parent-pid={Process.GetCurrentProcess().Id}" |]
+
         let p = new Process()
         p.StartInfo.FileName <- file
         p.StartInfo.Arguments <- String.concat " " args
