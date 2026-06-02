@@ -1,5 +1,5 @@
 # Aardium
-[![Publish](https://github.com/aardvark-community/aardium/actions/workflows/pack.yml/badge.svg)](https://github.com/aardvark-community/aardium/actions/workflows/pack.yml)
+[![Publish](https://github.com/aardvark-community/aardium/actions/workflows/publish.yml/badge.svg)](https://github.com/aardvark-community/aardium/actions/workflows/publish.yml)
 [![Nuget](https://img.shields.io/nuget/vpre/aardium)](https://www.nuget.org/packages/aardium/)
 [![Downloads](https://img.shields.io/nuget/dt/aardium)](https://www.nuget.org/packages/aardium/)
 
