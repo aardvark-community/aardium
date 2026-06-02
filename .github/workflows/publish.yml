@@ -19,12 +19,15 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+
       - name: Install Dotnet
         uses: actions/setup-dotnet@v5
         with:
           global-json-file: global.json
+
       - name: Restore Tools
         run: dotnet tool restore
+
       - name: Compare release versions
         id: compare
         shell: pwsh
@@ -95,24 +98,37 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+
       - name: Install Dotnet
         uses: actions/setup-dotnet@v5
         with:
           global-json-file: global.json
+
       - name: Restore Dotnet Tools
         run: dotnet tool restore
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24.15.0'
+          cache: 'npm'
+          cache-dependency-path: Aardium/package-lock.json
+
       - name: Install Python
         uses: actions/setup-python@v6
         with:
           python-version: '3.11.8'
+
       - name: Add Cert to Keychain
         uses: apple-actions/import-codesign-certs@v3
         with:
           p12-file-base64: ${{ secrets.MAC_CERT_BASE64 }}
           p12-password: ${{ secrets.MAC_CERT_PASSWORD }}
+
       - name: Npm Install
         working-directory: Aardium
         run: npm install
+
       - name: Npm Build
         working-directory: Aardium
         run: npm run build:darwin:arm64
@@ -121,12 +137,16 @@ jobs:
           MAC_CERT_PASSWORD: ${{ secrets.MAC_CERT_PASSWORD }}
           MAC_DEV_PASSWORD: ${{ secrets.MAC_DEV_PASSWORD }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Restore Paket
         run: dotnet paket restore
+
       - name: Dotnet Build
         run: dotnet build -c Release src/Aardium.sln
+
       - name: Dotnet Test
         run: dotnet test src/Aardium.sln -c Release --no-build --nologo --logger:"console;verbosity=normal"
+
       - name: Upload Aardium
         uses: actions/upload-artifact@v7
         with:
@@ -140,24 +160,37 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+
       - name: Install Dotnet
         uses: actions/setup-dotnet@v5
         with:
           global-json-file: global.json
+
       - name: Restore Dotnet Tools
         run: dotnet tool restore
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24.15.0'
+          cache: 'npm'
+          cache-dependency-path: Aardium/package-lock.json
+
       - name: Install Python
         uses: actions/setup-python@v6
         with:
           python-version: '3.11.8'
+
       - name: Add Cert to Keychain
         uses: apple-actions/import-codesign-certs@v3
         with:
           p12-file-base64: ${{ secrets.MAC_CERT_BASE64 }}
           p12-password: ${{ secrets.MAC_CERT_PASSWORD }}
+
       - name: Npm Install
         working-directory: Aardium
         run: npm install
+
       - name: Npm Build
         working-directory: Aardium
         run: npm run build:darwin:x64
@@ -166,12 +199,16 @@ jobs:
           MAC_CERT_PASSWORD: ${{ secrets.MAC_CERT_PASSWORD }}
           MAC_DEV_PASSWORD: ${{ secrets.MAC_DEV_PASSWORD }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Restore Paket
         run: dotnet paket restore
+
       - name: Dotnet Build
         run: dotnet build -c Release src/Aardium.sln
+
       - name: Dotnet Test
         run: dotnet test src/Aardium.sln -c Release --no-build --nologo --logger:"console;verbosity=normal"
+
       - name: Upload Aardium
         uses: actions/upload-artifact@v7
         with:
@@ -185,24 +222,39 @@ jobs:
     steps:  
       - name: Checkout
         uses: actions/checkout@v6
+
       - name: Install Dotnet
         uses: actions/setup-dotnet@v5
         with:
           global-json-file: global.json
+
       - name: Restore Dotnet Tools
         run: dotnet tool restore
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24.15.0'
+          cache: 'npm'
+          cache-dependency-path: Aardium/package-lock.json
+
       - name: Npm Install
         working-directory: Aardium
         run: npm install
+
       - name: Npm Build
         working-directory: Aardium
         run: npm run build:linux:x64
+
       - name: Restore Paket
         run: dotnet paket restore
+
       - name: Dotnet Build
         run: dotnet build -c Release src/Aardium.sln
+
       - name: Dotnet Test
         run: xvfb-run --auto-servernum dotnet test src/Aardium.sln -c Release --no-build --nologo --logger:"console;verbosity=normal"
+
       - name: Upload Aardium
         uses: actions/upload-artifact@v7
         with:
@@ -216,25 +268,40 @@ jobs:
     steps:  
       - name: Checkout
         uses: actions/checkout@v6
+
       - name: Install Dotnet
         uses: actions/setup-dotnet@v5
         with:
           global-json-file: global.json
+
       - name: Restore Dotnet Tools
         run: dotnet tool restore
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24.15.0'
+          cache: 'npm'
+          cache-dependency-path: Aardium\package-lock.json
+
       - name: Npm Install
         working-directory: Aardium
         run: npm install
+
       - name: Npm Build
         working-directory: Aardium
         run: npm run build:win32:x64
+
       - name: Restore Paket
         run: dotnet paket restore
+
       - name: Dotnet Build
         shell: cmd
         run: dotnet build -c Release src\Aardium.sln
+
       - name: Dotnet Test
         run: dotnet test src\Aardium.sln -c Release --no-build --nologo --logger:"console;verbosity=normal"
+
       - name: Upload Aardium
         uses: actions/upload-artifact@v7
         with:
@@ -251,43 +318,53 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+
       - name: Download OSX dependencies (x64)
         uses: actions/download-artifact@v8
         with:
           name: mac_x64
           path: Aardium/dist/Aardium-Darwin-x64.tar.gz
+
       - name: Download OSX dependencies (arm64)
         uses: actions/download-artifact@v8
         with:
           name: mac_arm64
           path: Aardium/dist/Aardium-Darwin-arm64.tar.gz
+
       - name: Download Linux dependencies (x64)
         uses: actions/download-artifact@v8
         with:
           name: linux_x64
           path: Aardium/dist/Aardium-Linux-x64.tar.gz
+
       - name: Download Windows dependencies (x64)
         uses: actions/download-artifact@v8
         with:
           name: win32_x64
           path: Aardium\dist\Aardium-win32-x64
+
       - name: Install Dotnet
         uses: actions/setup-dotnet@v5
         with:
           global-json-file: global.json
+
       - name: Restore Tools
         run: dotnet tool restore
+
       - name: Restore
         run: dotnet paket restore
+
       - name: Pack
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: dotnet aardpack src\Aardium.sln --notag
+
       - name: Upload Package
         uses: actions/upload-artifact@v7
         with:
           name: packages
           path: bin\pack
+
       - name: NuGet
         env:
           NUGET_KEY: ${{ secrets.NUGET_KEY }}
