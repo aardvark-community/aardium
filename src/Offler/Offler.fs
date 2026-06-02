@@ -285,16 +285,10 @@ type Offler internal(ws : WebSocket, shared : ISharedMemory, incremental : bool,
     static let getServer() =
         lock serverLock (fun () ->
             if serverRefCount = 0 then
-                let mutable isReady = false
-                let readyLock = obj()
+                let ready = MVar.empty()
 
                 let logCallback isError message =
-                    if not isReady && String.contains "SERVER_READY" message then
-                        lock readyLock (fun _ ->
-                            isReady <- true
-                            Monitor.Pulse readyLock
-                        )
-
+                    if String.contains "SERVER_READY" message then ready.Put()
                     logger isError message
 
                 let newServer = Aardium.StartOffscreenServer logCallback
@@ -303,16 +297,12 @@ type Offler internal(ws : WebSocket, shared : ISharedMemory, incremental : bool,
 
                 logger false "Waiting for server..."
 
-                lock readyLock (fun _ ->
-                    while not isReady do
-                        try
-                            if not <| Monitor.Wait(readyLock, TimeSpan.FromSeconds 10) then
-                                Log.warn "[Offler] Timed out waiting for server"
-                                isReady <- true
-                        with exn ->
-                            Log.error $"[Offler] Error while waiting for server: {exn}"
-                            isReady <- true
-                )
+                try
+                    match ready.TryTake <| TimeSpan.FromSeconds 10 with
+                    | None -> Log.warn "[Offler] Timed out waiting for server"
+                    | _ -> ()
+                with exn ->
+                    Log.error $"[Offler] Error while waiting for server: {exn}"
 
                 logger false "Server is ready"
 
@@ -611,7 +601,7 @@ type Offler internal(ws : WebSocket, shared : ISharedMemory, incremental : bool,
         ws.ConnectAsync(Uri (sprintf "ws://127.0.0.1:%d/" s.Port), CancellationToken.None).Wait()
 
         let mapSize = 32L <<< 20
-        let mapping = SharedMemory.createNew mapSize
+        let mapping = SharedMemory.Create mapSize
 
         let command = 
             sprintf "{ \"command\": \"init\", \"incremental\": %s, \"mapName\": \"%s\", \"mapSize\": %d, \"width\": %d, \"height\": %d, \"url\": \"%s\" }"
