@@ -22,7 +22,7 @@
     "@electron/remote": "^2.1.0",
     "electron-localshortcut": "^3.2.1",
     "node-getopt": "^0.3.2",
-    "node-shared-mem": "^2.0.0",
+    "node-shared-mem": "^2.1.0",
     "ws": "^8.20.1"
   },
   "devDependencies": {
