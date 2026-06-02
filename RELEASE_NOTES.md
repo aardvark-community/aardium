@@ -1,3 +1,7 @@
+### 3.0.0
+- Updated to Electron 42
+- Fixed Offler startup race condition
+
 ### 2.1.2
 - Fixed crash on MacOS ARM64 due to missing entitlement
 
