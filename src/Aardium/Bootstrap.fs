@@ -306,6 +306,9 @@ type AardiumConfig =
         /// Enable experimental Webkit features. Default is false.
         experimental     : bool
 
+        /// Detect system proxy settings (may incur a start-up delay). Default is false.
+        detectProxy      : bool
+
         /// Additional window options.
         woptions         : Option<string>
 
@@ -332,6 +335,7 @@ module AardiumConfig =
             openExternalUrls = false
             experimental = false
             hideDock = false
+            detectProxy = false
             woptions = None
             log = fun _isError _ln -> ()
         }
@@ -364,6 +368,10 @@ module AardiumConfig =
 
             match cfg.experimental with
             | true -> yield "--experimental"
+            | false -> ()
+
+            match cfg.detectProxy with
+            | true -> yield "--detect-proxy"
             | false -> ()
 
             match cfg.width with
@@ -689,45 +697,50 @@ module Aardium =
             let h = (^Size: (member P_Y : int)s)
             { cfg with minWidth = Some w; minHeight = Some h }
 
-        /// Enable debug / developer tools.
+        /// Enable debug / developer tools. Default is false.
         [<CustomOperation("debug")>]
         member x.Debug(cfg : AardiumConfig, v : bool) =
             { cfg with debug = v }
 
-        /// Open a fullscreen window.
+        /// Open a fullscreen window. Default is false.
         [<CustomOperation("fullscreen")>]
         member x.Fullscreen(cfg : AardiumConfig, v : bool) =
             { cfg with fullscreen = v }
 
-        /// Maximize the window after opening.
+        /// Maximize the window after opening. Default is false.
         [<CustomOperation("maximize")>]
         member x.Maximize(cfg : AardiumConfig, v : bool) =
             { cfg with maximize = v }
 
-        /// Minimize and restore seconary windows with the main window.
+        /// Minimize and restore seconary windows with the main window. Default is true.
         [<CustomOperation("multiwindow")>]
         member x.Multiwindow(cfg : AardiumConfig, v : bool) =
             { cfg with multiwindow = v }
 
-        /// Open external URLs in Aardium rather than the default browser.
+        /// Open external URLs in Aardium rather than the default browser. Default is false.
         [<CustomOperation("openExternalUrls")>]
         member x.OpenExternalUrls(cfg : AardiumConfig, v : bool) =
             { cfg with openExternalUrls = v }
 
-        /// Hide the application icon in the macOS dock.
+        /// Hide the application icon in the macOS dock. Default is false.
         [<CustomOperation("hideDock")>]
         member x.HideDock(cfg : AardiumConfig, v : bool) =
             { cfg with hideDock = v }
 
-        /// Display the default menu.
+        /// Display the default menu. Default is false.
         [<CustomOperation("menu")>]
         member x.Menu(cfg : AardiumConfig, v : bool) =
             { cfg with menu = v }
 
-        /// Enable experimental Webkit features.
+        /// Enable experimental Webkit features. Default is false.
         [<CustomOperation("experimental")>]
         member x.Experimental(cfg : AardiumConfig, v : bool) =
             { cfg with experimental = v }
+
+        /// Detect system proxy settings (may incur a start-up delay). Default is false.
+        [<CustomOperation("detectProxy")>]
+        member x.DetectProxy(cfg : AardiumConfig, v : bool) =
+            { cfg with detectProxy = v }
 
         /// Logging callback for Aardium output.
         [<CustomOperation("log")>]

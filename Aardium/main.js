@@ -26,6 +26,7 @@ const availableOptions =
   [''  , 'maximize'               , 'display maximized window'],
   [''  , 'multiwindow'            , 'minimize and restore child windows with their parent'],
   ['e' , 'experimental'           , 'enable experimental webkit extensions' ],
+  [''  , 'detect-proxy'           , 'detect system proxy settings (may incur start-up delay)' ],
   [''  , 'frameless'              , 'frameless window'],
   [''  , 'woptions=ARG'           , 'BrowserWindow options'],
   [''  , 'server=port'            , 'run server for offscreen rendering' ],
@@ -49,6 +50,7 @@ const config = {
   menu: false,
   hideDock: false,
   experimental: false,
+  detectProxy: false,
   frameless: false,
   fullscreen: false,
   maximize: false,
@@ -77,6 +79,7 @@ function parseOptions(argv) {
   if (opt['min-height']) config.minHeight = parseInt(opt['min-height']);
   if (opt.icon) config.icon = opt.icon;
   if (opt.experimental) config.experimental = true;
+  if (opt['detect-proxy']) config.detectProxy = true;
   if (opt.frameless) config.frameless = true;
   if (opt.fullscreen) config.fullscreen = true;
   if (opt['open-external-urls']) config.openExternal = true;
@@ -489,6 +492,7 @@ function ready() {
 // See: https://www.electronjs.org/docs/latest/tutorial/performance#8-call-menusetapplicationmenunull-when-you-do-not-need-a-default-menu
 parseOptions(process.argv);
 if (!config.menu) electron.Menu.setApplicationMenu(null)
+if (!config.detectProxy) app.commandLine.appendSwitch('no-proxy-server');
 
 // Make sure Aardium exits when the parent process crashes or terminates.
 if (config.parentPid) {
