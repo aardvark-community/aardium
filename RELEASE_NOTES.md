@@ -1,3 +1,6 @@
+### 3.0.1
+- Added `detectProxy` option. Disabled by default to avoid noticeable start-up delay.
+
 ### 3.0.0
 - Updated to Electron 42
 - Fixed Offler startup race condition
