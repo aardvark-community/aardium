@@ -39,7 +39,7 @@ const defaultIcon =
   (process.platform === 'darwin') ? "aardvark_128.png" : "aardvark.ico";
 
 const config = {
-  url: new URL("http://ask.aardvark.graphics"),
+  url: new URL("about:blank"),
   width: 1024,
   height: 768,
   minWidth: 0,
@@ -72,7 +72,19 @@ function parseOptions(argv) {
     return;
   }
 
-  if (opt.url) config.url = new URL(opt.url);
+  if (typeof opt.url === 'string') {
+    let url = opt.url.trim();
+
+    try {
+      if (url) {
+        url = /^[a-zA-Z0-9+-.]+:/.test(url) ? url : `https://${url}`;
+        config.url = new URL(url);
+      }
+    } catch (err) {
+      console.error(`Failed to parse URL '${url}':`, err.message);
+    }
+  }
+
   if (opt.width) config.width = parseInt(opt.width);
   if (opt.height) config.height = parseInt(opt.height);
   if (opt['min-width']) config.minWidth = parseInt(opt['min-width']);
