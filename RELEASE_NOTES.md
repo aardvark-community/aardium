@@ -1,3 +1,6 @@
+### 3.0.2
+- Made URL parsing more robust.
+
 ### 3.0.1
 - Added `detectProxy` option. Disabled by default to avoid noticeable start-up delay.
 
