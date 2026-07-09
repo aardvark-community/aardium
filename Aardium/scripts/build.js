@@ -43,7 +43,11 @@ async function main() {
         FileDescription: 'Aardium',
         ProductName: 'Aardium',
         OriginalFilename: 'Aardium.exe'
-      }
+      },
+      ignore: [
+        /^\/build$/,
+        /^\/scripts$/
+      ]
     });
 
     console.log(`Successfully packaged application at:\n`, appPaths.join('\n'));
