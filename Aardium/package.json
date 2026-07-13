@@ -43,5 +43,8 @@
     },
     "buildDependenciesFromSource": true,
     "afterSign": "scripts/notarize.js"
+  },
+  "allowScripts": {
+    "node-shared-mem": true
   }
 }
