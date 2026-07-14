@@ -2,6 +2,7 @@ require('@electron/remote/main').initialize()
 
 const electron = require('electron');
 const app = electron.app;
+const dialog = electron.dialog;
 const BrowserWindow = electron.BrowserWindow;
 const electronLocalShortcut = require('electron-localshortcut');
 
@@ -521,4 +522,15 @@ if (config.parentPid) {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.whenReady().then(ready);
+app.whenReady().then(ready).catch((error) => {
+  console.error(error);
+  dialog.showMessageBoxSync(null, {
+    type: 'error',
+    title: 'Application Error',
+    message: 'Error during initialization.',
+    detail: String(error),
+    buttons: ['OK'],
+    defaultId: 0
+  });
+  app.exit(1);
+});

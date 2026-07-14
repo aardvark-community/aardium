@@ -1,3 +1,5 @@
+- Handle initialization errors with dialog
+
 ### 3.0.2
 - Made URL parsing more robust.
 
