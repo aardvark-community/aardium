@@ -1,5 +1,5 @@
 FSharp.Core
-Aardvark.PixImage.ImageSharp
+Aardvark.PixImage.PixCodec
 Expecto
 Expecto.FsCheck
 YoloDev.Expecto.TestSdk

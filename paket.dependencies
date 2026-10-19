@@ -9,7 +9,7 @@ nuget Aardvark.Base                         ~> 5.3.24
 nuget Aardvark.Base.Tensors                 ~> 5.3.24
 
 // Demo
-nuget Aardvark.PixImage.ImageSharp          ~> 3.0.2
+nuget Aardvark.PixImage.PixCodec            ~> 1.0.0
 
 nuget Expecto                               ~> 10.2.3
 nuget Expecto.FsCheck                       ~> 10.2.3
