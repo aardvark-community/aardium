@@ -1,3 +1,5 @@
+- Fix deprecation warning on startup caused by node-getopt
+- Ignore errors due to broken pipes when parent process exits unexpectedly
 - [Offler] Add missing copy on `requestfullframe` message
 
 ### 3.0.3

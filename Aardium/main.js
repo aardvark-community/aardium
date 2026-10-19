@@ -10,6 +10,16 @@ const path = require('path');
 const getopt = require('node-getopt');
 const { WebSocket, WebSocketServer } = require('ws');
 
+// Ignore broken pipe errors.
+// Can be observed when using Offler and not properly shutting down the Electron process.
+const ignorePipeError = (err) => {
+  if (err.code === 'EPIPE') return;
+  throw err;
+};
+
+process.stdout?.on('error', ignorePipeError);
+process.stderr?.on('error', ignorePipeError);
+
 const availableOptions =
 [
   ['w' , 'width=ARG'              , 'initial window width'],
