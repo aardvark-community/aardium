@@ -1,3 +1,5 @@
+- [Offler] Add missing copy on `requestfullframe` message
+
 ### 3.0.3
 - Handle initialization errors with dialog
 - Make local URL check stricter; only URLs with the same origin as the server are considered local

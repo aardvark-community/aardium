@@ -255,12 +255,11 @@ function runOffscreenServer(port) {
           win =
             new BrowserWindow({
               titleBarStyle: "hidden",
-              backgroundThrottling: false,
               frame: false,
               useContentSize: true,
               show: false,
               transparent: true,
-              webPreferences: { offscreen: true, devTools: true, contextIsolation: false },
+              webPreferences: { offscreen: true, backgroundThrottling: false, devTools: true, contextIsolation: false },
               width: cmd.width,
               height: cmd.height
             })
@@ -350,6 +349,11 @@ function runOffscreenServer(port) {
               const size = image.getSize();
               const bmp = image.toBitmap();
               const offset = append(bmp);
+
+              if (mapping.requiresCopy) {
+                mapping.copyTo(offset, offset, bmp.byteLength);
+              }
+
               ws.send(
                 JSON.stringify({
                   type: "fullframe",
