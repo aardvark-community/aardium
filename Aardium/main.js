@@ -207,11 +207,9 @@ function createMainWindow () {
 }
 
 function runOffscreenServer(port) {
-  // process gets killed otherwise
-  const dummyWin = new BrowserWindow({ show: false, webPreferences: { offscreen: true, contextIsolation: false } })
   const { SharedMemory } = require('node-shared-mem');
 
-  const server = new WebSocketServer({ port: port });
+  const server = new WebSocketServer({ host: '127.0.0.1', port: port });
 
   server.on('listening', () => {
     console.log("SERVER_READY"); 

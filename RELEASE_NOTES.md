@@ -1,3 +1,5 @@
+- [Offler] Start server on localhost
+
 ### 3.0.4
 - Fix deprecation warning on startup caused by node-getopt
 - Ignore errors due to broken pipes when parent process exits unexpectedly
