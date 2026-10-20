@@ -21,16 +21,16 @@
   "dependencies": {
     "@electron/remote": "^2.1.3",
     "electron-localshortcut": "^3.2.1",
-    "node-getopt": "git://github.com/tuxpoldo/node-getopt.git#05e498731c14b648fa332ca78d3a301c5e4be440",
+    "node-getopt": "github:tuxpoldo/node-getopt#05e498731c14b648fa332ca78d3a301c5e4be440",
     "node-shared-mem": "^2.1.0",
-    "ws": "^8.21.3"
+    "ws": "^8.22.0"
   },
   "devDependencies": {
-    "@electron/notarize": "^3.1.1",
+    "@electron/notarize": "^3.1.2",
     "@electron/packager": "^20.3.0",
-    "@electron/rebuild": "^4.2.0",
+    "@electron/rebuild": "^4.2.1",
     "dotenv": "^17.4.2",
-    "electron": "44.4.5"
+    "electron": "^44.9.1"
   },
   "build": {
     "appId": "com.aardvarkians.aardium",

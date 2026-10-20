@@ -1,3 +1,4 @@
+- Update to Electron 44.9.1
 - [Offler] Start server on localhost
 
 ### 3.0.4
