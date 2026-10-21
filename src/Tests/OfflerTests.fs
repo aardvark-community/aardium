@@ -28,7 +28,7 @@ module Offler =
             lock messages (fun _ ->
                 let isDone() = messages.Contains "foo" && messages.Contains "bar"
                 while not <| isDone() do
-                    let success = Monitor.Wait(messages, TimeSpan.FromSeconds 10)
+                    let success = Monitor.Wait(messages, TimeSpan.FromSeconds 10L)
                     if not success then
                         failtest $"Timeout, messages: {List.ofSeq messages}"
 
@@ -52,7 +52,7 @@ module Offler =
             )
 
             lock lockObj (fun _ ->
-                while Monitor.Wait(lockObj, TimeSpan.FromSeconds 10) do ()
+                while Monitor.Wait(lockObj, TimeSpan.FromSeconds 10L) do ()
 
                 Expect.isGreaterThan images 0 "No images retrieved"
 
@@ -85,7 +85,7 @@ module Offler =
             ]
 
             lock images (fun _ ->
-                while images.Count < 10 && Monitor.Wait(images, TimeSpan.FromSeconds 10) do ()
+                while images.Count < 10 && Monitor.Wait(images, TimeSpan.FromSeconds 10L) do ()
                 Expect.isGreaterThanOrEqual images.Count 10 "Not enough images retrieved"
 
                 let mutable valid = 0
