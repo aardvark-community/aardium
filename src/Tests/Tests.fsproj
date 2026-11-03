@@ -16,6 +16,7 @@
     <None Include="paket.references" />
     <Compile Include="Utilities.fs" />
     <Compile Include="OfflerTests.fs" />
+    <Compile Include="UserDataTests.fs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Offler\Offler.fsproj" />

@@ -42,7 +42,8 @@ const availableOptions =
   [''  , 'woptions=ARG'           , 'BrowserWindow options'],
   [''  , 'server=port'            , 'run server for offscreen rendering' ],
   [''  , 'open-external-urls'     , 'open external URLs in Aardium rather than the default browser'],
-  [''  , 'parent-pid=ARG'         , 'id of the parent process, Aardium will automatically terminate if the parent process stops running or crashes']
+  [''  , 'parent-pid=ARG'         , 'id of the parent process, Aardium will automatically terminate if the parent process stops running or crashes'],
+  [''  , 'user-data=ARG'          , 'folder of the Chromium profile (cache, local storage); instances with separate folders run side by side']
 ];
 
 const defaultIcon =
@@ -77,6 +78,7 @@ function parseOptions(argv) {
   const opt = getopt.create(availableOptions).bindHelp().parse(args).options;
 
   if (opt['parent-pid']) config.parentPid = parseInt(opt['parent-pid']);
+  if (opt['user-data']) config.userData = path.resolve(opt['user-data']);
 
   if (opt.server) {
     config.server = opt.server;
@@ -518,6 +520,8 @@ function ready() {
 // Parse command line options and disable menu before ready is called.
 // See: https://www.electronjs.org/docs/latest/tutorial/performance#8-call-menusetapplicationmenunull-when-you-do-not-need-a-default-menu
 parseOptions(process.argv);
+// The profile folder must be set before ready; instances sharing one log cache errors.
+if (config.userData) app.setPath('userData', config.userData);
 if (!config.menu) electron.Menu.setApplicationMenu(null)
 if (!config.detectProxy) app.commandLine.appendSwitch('no-proxy-server');
 

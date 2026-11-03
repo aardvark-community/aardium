@@ -1,3 +1,6 @@
+### 3.0.6
+- Add a user data folder option (`userData`, `--user-data`): instances with separate Chromium profiles run side by side
+
 ### 3.0.5
 - Update to Electron 44.9.1
 - [Offler] Start server on localhost

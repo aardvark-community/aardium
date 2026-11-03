@@ -312,6 +312,10 @@ type AardiumConfig =
         /// Additional window options.
         woptions         : Option<string>
 
+        /// Folder of the Chromium profile (cache, local storage). Instances with separate folders run side by side; ones
+        /// sharing a folder log cache errors. Default is the platform's application data folder.
+        userData         : Option<string>
+
         /// Logging callback for Aardium output.
         log              : bool -> string -> unit
     }
@@ -337,6 +341,7 @@ module AardiumConfig =
             hideDock = false
             detectProxy = false
             woptions = None
+            userData = None
             log = fun _isError _ln -> ()
         }
 
@@ -412,6 +417,10 @@ module AardiumConfig =
 
             match cfg.woptions with
             | Some w -> yield "--woptions=\""  + w.Replace("\"", "\\\"") + "\""
+            | None -> ()
+
+            match cfg.userData with
+            | Some folder -> yield "--user-data=\"" + folder + "\""
             | None -> ()
         |]
 
@@ -741,6 +750,11 @@ module Aardium =
         [<CustomOperation("detectProxy")>]
         member x.DetectProxy(cfg : AardiumConfig, v : bool) =
             { cfg with detectProxy = v }
+
+        /// Folder of the Chromium profile (cache, local storage); instances with separate folders run side by side.
+        [<CustomOperation("userData")>]
+        member x.UserData(cfg : AardiumConfig, folder : string) =
+            { cfg with userData = Some folder }
 
         /// Logging callback for Aardium output.
         [<CustomOperation("log")>]
