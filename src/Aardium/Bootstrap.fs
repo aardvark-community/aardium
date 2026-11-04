@@ -316,6 +316,11 @@ type AardiumConfig =
         /// sharing a folder log cache errors. Default is the platform's application data folder.
         userData         : Option<string>
 
+        /// Port of Chromium's DevTools protocol (CDP), on the loopback interface; 0 picks a free port, which Chromium
+        /// writes into the user data folder's DevToolsActivePort. CDP gives full control of the pages, so none is opened
+        /// unless set. Default is none.
+        remoteDebuggingPort : Option<int>
+
         /// Logging callback for Aardium output.
         log              : bool -> string -> unit
     }
@@ -342,6 +347,7 @@ module AardiumConfig =
             detectProxy = false
             woptions = None
             userData = None
+            remoteDebuggingPort = None
             log = fun _isError _ln -> ()
         }
 
@@ -421,6 +427,10 @@ module AardiumConfig =
 
             match cfg.userData with
             | Some folder -> yield "--user-data=\"" + folder + "\""
+            | None -> ()
+
+            match cfg.remoteDebuggingPort with
+            | Some port -> yield "--remote-debugging-port=" + string port
             | None -> ()
         |]
 
@@ -755,6 +765,13 @@ module Aardium =
         [<CustomOperation("userData")>]
         member x.UserData(cfg : AardiumConfig, folder : string) =
             { cfg with userData = Some folder }
+
+        /// Port of Chromium's DevTools protocol on the loopback interface; 0 picks a free port (DevToolsActivePort in the
+        /// user data folder). Opt-in: CDP gives full control of the pages.
+        [<CustomOperation("remoteDebuggingPort")>]
+        member x.RemoteDebuggingPort(cfg : AardiumConfig, port : int) =
+            if port < 0 || port > 65535 then invalidArg (nameof port) "The remote debugging port must be 0 (any free port) to 65535."
+            { cfg with remoteDebuggingPort = Some port }
 
         /// Logging callback for Aardium output.
         [<CustomOperation("log")>]

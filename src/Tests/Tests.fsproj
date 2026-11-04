@@ -17,6 +17,7 @@
     <Compile Include="Utilities.fs" />
     <Compile Include="OfflerTests.fs" />
     <Compile Include="UserDataTests.fs" />
+    <Compile Include="RemoteDebuggingTests.fs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Offler\Offler.fsproj" />
