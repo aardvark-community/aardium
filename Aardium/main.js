@@ -43,7 +43,8 @@ const availableOptions =
   [''  , 'server=port'            , 'run server for offscreen rendering' ],
   [''  , 'open-external-urls'     , 'open external URLs in Aardium rather than the default browser'],
   [''  , 'parent-pid=ARG'         , 'id of the parent process, Aardium will automatically terminate if the parent process stops running or crashes'],
-  [''  , 'user-data=ARG'          , 'folder of the Chromium profile (cache, local storage); instances with separate folders run side by side']
+  [''  , 'user-data=ARG'          , 'folder of the Chromium profile (cache, local storage); instances with separate folders run side by side'],
+  [''  , 'remote-debugging-port=ARG', 'port of the DevTools protocol on the loopback interface, 0 for any free port (written to DevToolsActivePort in the profile folder); none unless set']
 ];
 
 const defaultIcon =
@@ -79,6 +80,11 @@ function parseOptions(argv) {
 
   if (opt['parent-pid']) config.parentPid = parseInt(opt['parent-pid']);
   if (opt['user-data']) config.userData = path.resolve(opt['user-data']);
+  if (typeof opt['remote-debugging-port'] === 'string') {
+    const port = Number(opt['remote-debugging-port']);
+    if (Number.isInteger(port) && port >= 0 && port <= 65535) config.remoteDebuggingPort = port;
+    else console.error(`Invalid remote debugging port '${opt['remote-debugging-port']}'.`);
+  }
 
   if (opt.server) {
     config.server = opt.server;
@@ -522,6 +528,11 @@ function ready() {
 parseOptions(process.argv);
 // The profile folder must be set before ready; instances sharing one log cache errors.
 if (config.userData) app.setPath('userData', config.userData);
+// Chromium's DevTools protocol only when asked for, and only on the loopback interface.
+if (config.remoteDebuggingPort !== undefined) {
+  app.commandLine.appendSwitch('remote-debugging-address', '127.0.0.1');
+  app.commandLine.appendSwitch('remote-debugging-port', String(config.remoteDebuggingPort));
+}
 if (!config.menu) electron.Menu.setApplicationMenu(null)
 if (!config.detectProxy) app.commandLine.appendSwitch('no-proxy-server');
 
