@@ -1,3 +1,6 @@
+### 3.0.7
+- Add a remote debugging port option (`remoteDebuggingPort`, `--remote-debugging-port`): Chromium's DevTools protocol on 127.0.0.1, off unless set, so tools such as Playwright can attach (see README.md)
+
 ### 3.0.6
 - Add a user data folder option (`userData`, `--user-data`): instances with separate Chromium profiles run side by side
 
