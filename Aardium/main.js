@@ -40,6 +40,7 @@ const availableOptions =
   [''  , 'detect-proxy'           , 'detect system proxy settings (may incur start-up delay)' ],
   [''  , 'frameless'              , 'frameless window'],
   [''  , 'woptions=ARG'           , 'BrowserWindow options'],
+  [''  , 'window-open-features'   , 'BrowserWindow options a page names in its window.open features take precedence over Aardium\'s'],
   [''  , 'server=port'            , 'run server for offscreen rendering' ],
   [''  , 'open-external-urls'     , 'open external URLs in Aardium rather than the default browser'],
   [''  , 'parent-pid=ARG'         , 'id of the parent process, Aardium will automatically terminate if the parent process stops running or crashes'],
@@ -68,6 +69,7 @@ const config = {
   fullscreen: false,
   maximize: false,
   multiwindow: false,
+  windowOpenFeatures: false,
   openExternal: false,
   debug: false,
   windowOptions: {},
@@ -116,6 +118,7 @@ function parseOptions(argv) {
   if (opt['open-external-urls']) config.openExternal = true;
   if (opt.maximize) config.maximize = true;
   if (opt.multiwindow) config.multiwindow = true;
+  if (opt['window-open-features']) config.windowOpenFeatures = true;
   if (opt.dev) config.debug = true;
   if (opt.menu) config.menu = true;
   if (opt.hideDock) config.hideDock = true;
@@ -452,7 +455,7 @@ function ready() {
 
       // Make sure preload and other settings are applied
       // to windows opened from the renderer.
-      window.webContents.setWindowOpenHandler(({ url }) => {
+      window.webContents.setWindowOpenHandler(({ url, features }) => {
         const isLocal = isLocalUrl(url);
 
         if (!config.openExternal && !isLocal) {
@@ -460,15 +463,24 @@ function ready() {
           return { action: 'deny' };
         }
 
+        const options = {
+          icon: config.icon,
+          frame: !config.frameless,
+          minWidth: config.minWidth,
+          minHeight: config.minHeight,
+          title: config.title,
+          fullscreenable: true
+        };
+
+        // Electron takes the options a page names in its window.open features unless overridden here.
+        if (config.windowOpenFeatures) {
+          for (const feature of features.split(',')) delete options[feature.split('=')[0].trim()];
+        }
+
         return {
           action: 'allow',
           overrideBrowserWindowOptions: {
-            icon: config.icon,
-            frame: !config.frameless,
-            minWidth: config.minWidth,
-            minHeight: config.minHeight,
-            title: config.title,
-            fullscreenable: true,
+            ...options,
             webPreferences: isLocal ? config.webPreferences : {}
           }
         }

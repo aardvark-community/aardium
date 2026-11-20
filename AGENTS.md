@@ -31,8 +31,9 @@ dotnet tool restore
 dotnet build src/Aardium.sln -c Release
 dotnet test src/Tests/Tests.fsproj -c Release
 ```
-- `npm install` rebuilds `node-shared-mem` with node-gyp, which needs a Python (`npm_config_python=<path>` if none is
-  found).
+- `npm install` rebuilds `node-shared-mem` with node-gyp, which needs a Python (`PYTHON=<path>` if none is found; npm
+  12 warns that `npm_config_python` is an unknown config).
+- `Aardium/.npmrc` allows the git dependency (`node-getopt`), which npm 12 refuses by default.
 - The tests open Electron windows.
 
 ## Adding an option

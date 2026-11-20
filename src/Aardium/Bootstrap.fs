@@ -321,6 +321,11 @@ type AardiumConfig =
         /// unless set. Default is none.
         remoteDebuggingPort : Option<int>
 
+        /// BrowserWindow options a page names in its window.open features (frame=no, minWidth=180, ...) take precedence
+        /// over Aardium's for the windows it opens; otherwise those windows get Aardium's icon, frame, title and the
+        /// main window's minimum size. Default is false.
+        windowOpenFeatures : bool
+
         /// Logging callback for Aardium output.
         log              : bool -> string -> unit
     }
@@ -348,6 +353,7 @@ module AardiumConfig =
             woptions = None
             userData = None
             remoteDebuggingPort = None
+            windowOpenFeatures = false
             log = fun _isError _ln -> ()
         }
 
@@ -432,6 +438,10 @@ module AardiumConfig =
             match cfg.remoteDebuggingPort with
             | Some port -> yield "--remote-debugging-port=" + string port
             | None -> ()
+
+            match cfg.windowOpenFeatures with
+            | true -> yield "--window-open-features"
+            | false -> ()
         |]
 
 type AardiumOffscreenServer internal (proc : Process, port : int) =
@@ -772,6 +782,12 @@ module Aardium =
         member x.RemoteDebuggingPort(cfg : AardiumConfig, port : int) =
             if port < 0 || port > 65535 then invalidArg (nameof port) "The remote debugging port must be 0 (any free port) to 65535."
             { cfg with remoteDebuggingPort = Some port }
+
+        /// BrowserWindow options a page names in its window.open features take precedence over Aardium's for the windows
+        /// it opens. Default is false.
+        [<CustomOperation("windowOpenFeatures")>]
+        member x.WindowOpenFeatures(cfg : AardiumConfig, v : bool) =
+            { cfg with windowOpenFeatures = v }
 
         /// Logging callback for Aardium output.
         [<CustomOperation("log")>]
