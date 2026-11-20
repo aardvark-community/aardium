@@ -1,3 +1,7 @@
+### 3.0.8
+- Add a window-open features option (`windowOpenFeatures`, `--window-open-features`): the BrowserWindow options a page names in its `window.open` features (`frame=no`, `minWidth=180`, ...) take precedence over Aardium's for the windows it opens, off unless set
+- Build with npm 12 (`Aardium/.npmrc` allows the git dependency); the arm64 macOS release job runs on macos-15
+
 ### 3.0.7
 - Add a remote debugging port option (`remoteDebuggingPort`, `--remote-debugging-port`): Chromium's DevTools protocol on 127.0.0.1, off unless set, so tools such as Playwright can attach (see README.md)
 
